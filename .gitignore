@@ -1,0 +1,5 @@
+data
+*.nii
+__pcache__
+*.pyc
+*.swp
