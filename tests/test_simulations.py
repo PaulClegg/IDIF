@@ -46,13 +46,33 @@ def test_convertToUmap():
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_readTissueProperties():
     filename = "tissueproperty.m"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     path = os.path.join(data_stem, filename)
 
     properties = tsM.readTissueProperties(path)
+
+    assert True
+
+#@pytest.mark.skip()
+def test_convertPhantomToT1Values():
+    filename = "phantom_motion1.nii"
+    data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
+    path = os.path.join(data_stem, filename)
+    image = tsU.readNiftiImageData(path)
+
+    prop_name = "tissueproperty.m"
+    path = os.path.join(data_stem, prop_name)
+    properties = tsM.readTissueProperties(path, verbose=False)
+
+    T1_image = tsM.convertPhantomToT1Values(image, properties)
+    tsU.displayRegImageData(image, title="Initial phantom data")
+    tsU.displayRegImageData(T1_image, title="T1 weighted phantom data")
+    outname = "T1_" + filename.split("_")[1].split(".nii")[0] + "_image.nii"
+    path = os.path.join(data_stem, outname)
+    T1_image.write(path)
 
     assert True
 

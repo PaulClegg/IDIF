@@ -19,7 +19,7 @@ def readNiftiImageData(filename, verbose=True):
 
     return image
 
-def imshow(image, title=''):
+def imshow(image, aspect=None, title=''):
     """Display an image with a colourbar, returning the plot handle.
 
     Arguments:
@@ -28,7 +28,7 @@ def imshow(image, title=''):
     title -- a string for the title of the plot (default "")
     """
     plt.title(title)
-    bitmap=plt.imshow(image)
+    bitmap=plt.imshow(image, aspect=aspect)
     limits=[np.nanmin(image),np.nanmax(image)]
 
     plt.clim(limits[0], limits[1])
@@ -36,13 +36,13 @@ def imshow(image, title=''):
     plt.axis('off')
     return bitmap
 
-def displayRegImageData(image_data, title=""):
+def displayRegImageData(image_data, aspect=None, title=""):
     image_array = image_data.as_array()
     
     image_shape = image_array.shape
     z = image_shape[2] // 2
     plt.figure()
-    imshow(image_array[:, :, z], title)
+    imshow(image_array[:, :, z], aspect, title)
     plt.show()
 
  
