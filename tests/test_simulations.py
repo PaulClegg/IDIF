@@ -56,7 +56,7 @@ def test_readTissueProperties():
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_convertPhantomToT1Values():
     filename = "phantom_motion1.nii"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
@@ -73,6 +73,17 @@ def test_convertPhantomToT1Values():
     outname = "T1_" + filename.split("_")[1].split(".nii")[0] + "_image.nii"
     path = os.path.join(data_stem, outname)
     T1_image.write(path)
+
+    assert True
+
+#@pytest.mark.skip()
+def test_forwardProjectRadialMRI():
+    filename = "T1_motion1_image.nii"
+    data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
+    path = os.path.join(data_stem, filename)
+    T1_image = tsU.readNiftiImageData(path)
+
+    raw_mri = tsM.forwardProjectRadialMRI(T1_image, data_stem, verbose=True)
 
     assert True
 
