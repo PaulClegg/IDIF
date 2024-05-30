@@ -5,9 +5,13 @@ To create and manipulate MRI data from the phantom images
 
 import os
 import numpy as np
+import scipy.interpolate as si
 from matplotlib import pyplot as plt
 
+import utilities as mU
+
 import sirf.Gadgetron as mMR
+import sirf.Reg as mReg
 
 def convertPhantomToT1Values(ph_image, properties, verbose=True):
     # from inspection of UoE StarVIBE data
@@ -76,70 +80,78 @@ def divideLineIntoChunks(line, verbose=True):
 
     return [name, num, T1, T2, ADC, PDFF]
 
-def forwardProjectRadialMRI(MRI_image, data_path, verbose=True):
-    filename = "3D_RPE_Lowres.h5"
-    path = os.path.join(data_path, filename)
-    mr_acq = mMR.AcquisitionData(path, False, 
+def forwardProjectStarvibeMRI(MRI_image, data_path, acq_file, verbose=True):
+    # I need an acquisition model for the StarVIBE data
+    acq_data = mMR.AcquisitionData(acq_file, False,
         ignored=mMR.IgnoreMask(19))
+    acq_data.sort_by_time()
+    # Now we create the trajectory and set it
+    ktraj = calc_rad_traj_golden(acq_data)
+    mMR.set_radial2D_trajectory(acq_data, ktraj)
 
-    ### Following Christoph's approach 
-    pe_ky = mr_acq.get_ISMRMRD_info('kspace_encode_step_1')
-    print(len(pe_ky))
-    print(np.max(pe_ky))
-    print(np.where(pe_ky == (np.max(pe_ky)+1)//2))
     print("\n\n")
-    ###
-    # for radial
-    processed_data = mr_acq
-    if verbose:
-        print(f"Is undersampled? {mr_acq.is_undersampled()}")
-        print(mr_acq.dimensions())
+    print(acq_data.dimensions())
+    print(acq_data.check_traj_type("radial"))
 
-    processed_data = mMR.set_radial2D_trajectory(processed_data)
-    if verbose:
-        traj = np.transpose(mMR.get_data_trajectory(processed_data))
-        print("--- traj shape is {}".format(traj.shape))
-        size = [2] * len(traj[0, 0:4608])
-        plt.figure()
-        plt.scatter(traj[0,0:4608], traj[1,0:4608], size, marker='.')
-        # line 1 slice 1
-        plt.scatter(traj[0,0:128], traj[1,0:128], marker='.') 
-        # There are 72 radial lines per slice
-        # line 1 slice 2
-        plt.scatter(traj[0,9216:9344], traj[1,9216:9344], marker='.') 
-        plt.axis("equal")
-        plt.axis("off")
-        plt.show()
-    # Pass the radial trajectory in the shape (4608, 128, 2)
-    red_traj = np.zeros((4608, 128, 2))
-    j = 0
-    last_i = 0
-    for i in range(128, 589952, 128):
-        red_traj[j, 0:128, 0] = traj[0, last_i:i]
-        red_traj[j, 0:128, 1] = traj[1, last_i:i]
-        j += 1
-        last_i = i
-    processed_data = mMR.set_radial2D_trajectory(processed_data, red_traj)
+    # Instead of a coil sensitivity model I could start with
+    # an existing reconstructed image
+    #template_name = "mcir_StarVIBE.nii"
+    #template_file = os.path.join(data_path, template_name)
+    #real_file = mU.makeNiftiImageReal(template_file)
+    #recon_image = mReg.ImageData(real_file)
+    #print("\nReconstructed image")
+    #print(recon_image.dimensions())
 
-    # sort processed acquisition data
-    print('---\n sorting acquisition data...')
-    processed_data.sort()
+    csm = mMR.CoilSensitivityData()
+    csm.from_acquisition_data(acq_data)
+    print("\nCoil sensitivity matrix")
+    print(csm.dimensions())
+    print(f"Real? {csm.is_real()}")
+    # (I could fill the csm with a complex version of recon_image)
 
-    print("\nDimension problem")
-    print(f"Length of trajectory: {traj.shape[1]}")
-    product = processed_data.dimensions()[0] * processed_data.dimensions()[2]
-    print(f"Product of no. spokes and spoke length: {product}")
-    print(f"Trajectory - 128: {traj.shape[1] - 128}")
-    print("\n\n")
+    acq_mod = mMR.AcquisitionModel(acqs=acq_data, imgs=csm)
 
-    print('---\n computing coil sensitivity maps...')
-    csms = mMR.CoilSensitivityData()
-    csms.smoothness = 10
-    csms.calculate(processed_data)
-    # smooth coil sensitivity
-    csms = csms.sqrt()
-    csms = csms.sqrt()
-    csms = csms.sqrt()
+    print("\nPhantom image")
+    print(MRI_image.dimensions())
+    # Match dimensions of phantom image with that of the template data
+    MRI_arr = MRI_image.as_array()
+    rMRI_arr = np.zeros((MRI_arr.shape[2], MRI_arr.shape[0], 
+        MRI_arr.shape[1]))
+    for z in range(MRI_arr.shape[2]):
+        rMRI_arr[z, :, :] = MRI_arr[:, :, z]
+    ln = MRI_arr.shape[0]
+    lslice = MRI_arr.shape[2]
+    x_old = np.linspace(-ln // 2, ln // 2, ln)
+    y_old = np.linspace(-ln // 2, ln // 2, ln)
+    z_old = np.linspace(-lslice // 2, lslice // 2, lslice)
+    x_new = np.linspace(-ln // 2, ln // 2, csm.dimensions()[1])
+    y_new = np.linspace(-ln // 2, ln // 2, csm.dimensions()[2])
+    z_new = np.linspace(-lslice // 2, lslice // 2, csm.dimensions()[0])
+
+    interp = si.RegularGridInterpolator((z_old, x_old, y_old), rMRI_arr)
+    zg, xg, yg = np.meshgrid(z_new, x_new, y_new, indexing='ij', sparse=True)
+    out = interp(zg, xg, yg)
+    print(out.shape)
 
     raw_mri = mMR.AcquisitionData()
     return raw_mri
+
+def calc_rad_traj_golden(ad):
+    # Trajectory for Golden angle radial acquisitions
+    dims = ad.dimensions()
+    kx = np.linspace(-dims[2]//2, dims[2]//2, dims[2])
+    ky = ad.get_ISMRMRD_info('kspace_encode_step_1')
+    
+    # Define angle with Golden angle increment
+    angRad = ky * np.pi * 0.618034
+
+    # Normalise radial points between [-0.5 0.5]
+    krad = kx
+    krad = krad / (np.amax(np.abs(krad)) * 2)
+
+    # Calculate trajectory
+    rad_traj = np.zeros((dims[2], dims[0], 2), dtype=np.float32)
+    rad_traj[:, :, 0] = -1.0 * krad.reshape(-1, 1) * np.sin(angRad)
+    rad_traj[:, :, 1] = -1.0 * krad.reshape(-1, 1) * np.cos(angRad)
+    rad_traj = np.moveaxis(rad_traj, 0, 1)
+    return rad_traj

@@ -4,6 +4,7 @@ Generic reading, writing and display functions
 """
 
 import numpy as np
+import nibabel as nib
 from matplotlib import pyplot as plt
 
 import sirf.Reg as uReg
@@ -45,4 +46,14 @@ def displayRegImageData(image_data, aspect=None, title=""):
     imshow(image_array[:, :, z], aspect, title)
     plt.show()
 
+def makeNiftiImageReal(filename):
+    img = nib.load(filename)
+    image_real = np.abs(img.get_fdata())
+    img.header.set_data_dtype(image_real.dtype)
+    outImg = nib.Nifti1Image(image_real, 
+        affine=img.header.get_best_affine(), header=img.header)
+    out_name = filename.split(".")[0] + "_real.nii"
+    nib.save(outImg, out_name)
+
+    return out_name
  

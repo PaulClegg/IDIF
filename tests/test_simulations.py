@@ -77,13 +77,18 @@ def test_convertPhantomToT1Values():
     assert True
 
 #@pytest.mark.skip()
-def test_forwardProjectRadialMRI():
+def test_forwardProjectStarvibeMRI():
     filename = "T1_motion1_image.nii"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     path = os.path.join(data_stem, filename)
     T1_image = tsU.readNiftiImageData(path)
 
-    raw_mri = tsM.forwardProjectRadialMRI(T1_image, data_stem, verbose=True)
+    raw_name = "starVIBE.dat"
+    raw_path = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/cvs"
+    raw_full = os.path.join(raw_path, raw_name)
+
+    raw_mri = tsM.forwardProjectStarvibeMRI(T1_image, raw_path, raw_full,
+        verbose=True)
 
     assert True
 
