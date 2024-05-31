@@ -5,7 +5,7 @@ To create and manipulate MRI data from the phantom images
 
 import os
 import numpy as np
-import scipy.interpolate as si
+import scipy.ndimage as sn
 from matplotlib import pyplot as plt
 
 import utilities as mU
@@ -121,17 +121,37 @@ def forwardProjectStarvibeMRI(MRI_image, data_path, acq_file, verbose=True):
         rMRI_arr[z, :, :] = MRI_arr[:, :, z]
     ln = MRI_arr.shape[0]
     lslice = MRI_arr.shape[2]
-    x_old = np.linspace(-ln // 2, ln // 2, ln)
-    y_old = np.linspace(-ln // 2, ln // 2, ln)
-    z_old = np.linspace(-lslice // 2, lslice // 2, lslice)
-    x_new = np.linspace(-ln // 2, ln // 2, csm.dimensions()[1])
-    y_new = np.linspace(-ln // 2, ln // 2, csm.dimensions()[2])
-    z_new = np.linspace(-lslice // 2, lslice // 2, csm.dimensions()[0])
+    ln_out = csm.dimensions()[1]
+    lslice_out = csm.dimensions()[0]
+    x_new = np.linspace(0, (ln-1), ln_out)
+    y_new = np.linspace(0, (ln-1), ln_out)
+    z_new = np.linspace(0, (lslice-1), lslice_out)
 
-    interp = si.RegularGridInterpolator((z_old, x_old, y_old), rMRI_arr)
-    zg, xg, yg = np.meshgrid(z_new, x_new, y_new, indexing='ij', sparse=True)
-    out = interp(zg, xg, yg)
-    print(out.shape)
+    z = np.zeros(lslice_out * ln_out * ln_out)
+    x = np.zeros(lslice_out * ln_out * ln_out)
+    y = np.zeros(lslice_out * ln_out * ln_out)
+    a = 0; b=0
+    for i in range(lslice_out * ln_out * ln_out):
+        c = i % ln_out
+        z[i] = z_new[a]
+        x[i] = x_new[b]
+        y[i] = y_new[c]
+        if c == (ln_out - 1):
+            b += 1
+        if b == ln_out:
+            a += 1
+            b = 0
+    points_out = np.array([z, x, y])
+
+    new_arr = sn.map_coordinates(rMRI_arr, points_out)
+    new_arr = new_arr.reshape((lslice_out, ln_out, ln_out))
+    z_mid = new_arr.shape[0] // 2
+    if verbose:
+        plt.figure()
+        plt.imshow(new_arr[z_mid, :, :])
+        plt.show()
+
+    # Now forward project new_arr to make raw acquisition data
 
     raw_mri = mMR.AcquisitionData()
     return raw_mri
