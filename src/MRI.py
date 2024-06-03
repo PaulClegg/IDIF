@@ -152,8 +152,41 @@ def forwardProjectStarvibeMRI(MRI_image, data_path, acq_file, verbose=True):
         plt.show()
 
     # Now forward project new_arr to make raw acquisition data
+    print('---\n Backward projection starVIBE data ...')
+    recon_img = acq_mod.inverse(acq_data)
 
-    raw_mri = mMR.AcquisitionData()
+    # Forward
+    im_out = recon_img.clone()
+    im_out.fill(new_arr)
+    print('---\n Forward projection phantom data ...')
+    raw_mri = acq_mod.forward(im_out)
+    if verbose: print(raw_mri.dimensions())
+
+    # Backward - actually inverse
+    print('---\n Backward projection phantom data ...')
+    bwd_mr = acq_mod.inverse(raw_mri)
+
+    if verbose:
+        fig, axs = plt.subplots(3, 1)
+        fig.set_size_inches(11.69, 8.27)
+        fig.suptitle("MR plots from 3D", fontsize=16)
+
+        z_mid = new_arr.shape[0] // 2
+        acq_dim = raw_mri.dimensions()
+        axs[0].set_title("Original")
+        axs[0].imshow(new_arr[z_mid, :, :])
+        axs[0].axis("off")
+        axs[1].set_title("Raw")
+        #axs[1].imshow(np.log(np.abs(raw_mri.as_array()[0:4608:72, 2, :])))
+        axs[1].imshow(np.log(np.abs(
+            raw_mri.as_array()[15:acq_dim[0]:38, 3, :])))
+        axs[1].axis("off")
+        axs[2].set_title("Backwards")
+        axs[2].imshow(np.abs(bwd_mr.as_array()[z_mid, :, :]))
+        axs[2].axis("off")
+
+        plt.show()
+
     return raw_mri
 
 def calc_rad_traj_golden(ad):
