@@ -9,6 +9,10 @@ import os
 import utilities as tsU
 import uMap as tsP
 import MRI as tsM
+import PET_tools as tsPT
+
+import sirf.STIR as tsPET
+import sirf.Reg as tsReg
 
 @pytest.mark.skip()
 def test_readingNiftiImage():
@@ -76,7 +80,7 @@ def test_convertPhantomToT1Values():
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_forwardProjectStarvibeMRI():
     filename = "T1_motion1_image.nii"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
@@ -89,6 +93,44 @@ def test_forwardProjectStarvibeMRI():
 
     raw_mri = tsM.forwardProjectStarvibeMRI(T1_image, raw_path, raw_full,
         verbose=True)
+
+    assert True
+
+@pytest.mark.skip()
+def test_create3Dtemplate():
+    data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
+    tsPT.create3Dtemplate(data_stem)
+
+    assert True
+
+@pytest.mark.skip()
+def test_imageToSinogram():
+    filename = "phantom_motion1.nii"
+    data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
+    path = os.path.join(data_stem, filename)
+    image_data = tsU.readNiftiImageData(path)
+
+    template_path = os.path.join(data_stem, "template3D.hs")
+    template = tsPET.AcquisitionData(template_path)
+
+    raw_pet = tsPT.imageToSinogram(image_data, template, verbose=True)
+
+    assert True
+
+#@pytest.mark.skip()
+def test_createAC_Factors():
+    data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
+    uMap_name = "uMap_phantom.nii"
+    uMap_path = os.path.join(data_stem, uMap_name)
+    uMap_image = tsReg.ImageData(uMap_path)
+
+    template_path = os.path.join(data_stem, "template3D.hs")
+    template = tsPET.AcquisitionData(template_path)
+    im_pet = tsPET.ImageData(template)
+
+    print(uMap_image.dimensions())
+    uMap_reshaped = tsPT.reshapePhantomData(uMap_image, im_pet)
+    print(uMap_reshaped.dimensions())
 
     assert True
 

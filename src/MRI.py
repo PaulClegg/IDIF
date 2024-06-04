@@ -103,6 +103,7 @@ def forwardProjectStarvibeMRI(MRI_image, data_path, acq_file, verbose=True):
     #print(recon_image.dimensions())
 
     csm = mMR.CoilSensitivityData()
+    ### Needs replacing with calculate line!
     csm.from_acquisition_data(acq_data)
     print("\nCoil sensitivity matrix")
     print(csm.dimensions())
