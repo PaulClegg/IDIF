@@ -91,26 +91,18 @@ def forwardProjectStarvibeMRI(MRI_image, data_path, acq_file, verbose=True):
 
     print("\n\n")
     print(acq_data.dimensions())
+    print(f"1600 x 38 = {1600*38}")
     print(acq_data.check_traj_type("radial"))
 
-    # Instead of a coil sensitivity model I could start with
-    # an existing reconstructed image
-    #template_name = "mcir_StarVIBE.nii"
-    #template_file = os.path.join(data_path, template_name)
-    #real_file = mU.makeNiftiImageReal(template_file)
-    #recon_image = mReg.ImageData(real_file)
-    #print("\nReconstructed image")
-    #print(recon_image.dimensions())
-
     csm = mMR.CoilSensitivityData()
-    ### Needs replacing with calculate line!
-    csm.from_acquisition_data(acq_data)
+    csm.smoothness = 100
+    csm.calculate(acq_data)
     print("\nCoil sensitivity matrix")
     print(csm.dimensions())
     print(f"Real? {csm.is_real()}")
-    # (I could fill the csm with a complex version of recon_image)
 
     acq_mod = mMR.AcquisitionModel(acqs=acq_data, imgs=csm)
+    acq_mod.set_coil_sensitivity_maps(csm)
 
     print("\nPhantom image")
     print(MRI_image.dimensions())
@@ -122,8 +114,8 @@ def forwardProjectStarvibeMRI(MRI_image, data_path, acq_file, verbose=True):
         rMRI_arr[z, :, :] = MRI_arr[:, :, z]
     ln = MRI_arr.shape[0]
     lslice = MRI_arr.shape[2]
-    ln_out = csm.dimensions()[1]
-    lslice_out = csm.dimensions()[0]
+    ln_out = csm.dimensions()[2]
+    lslice_out = csm.dimensions()[1]
     x_new = np.linspace(0, (ln-1), ln_out)
     y_new = np.linspace(0, (ln-1), ln_out)
     z_new = np.linspace(0, (lslice-1), lslice_out)
@@ -148,6 +140,8 @@ def forwardProjectStarvibeMRI(MRI_image, data_path, acq_file, verbose=True):
     new_arr = new_arr.reshape((lslice_out, ln_out, ln_out))
     z_mid = new_arr.shape[0] // 2
     if verbose:
+        print("\nResampled phantom image")
+        print(new_arr.shape)
         plt.figure()
         plt.imshow(new_arr[z_mid, :, :])
         plt.show()
@@ -178,7 +172,6 @@ def forwardProjectStarvibeMRI(MRI_image, data_path, acq_file, verbose=True):
         axs[0].imshow(new_arr[z_mid, :, :])
         axs[0].axis("off")
         axs[1].set_title("Raw")
-        #axs[1].imshow(np.log(np.abs(raw_mri.as_array()[0:4608:72, 2, :])))
         axs[1].imshow(np.log(np.abs(
             raw_mri.as_array()[15:acq_dim[0]:38, 3, :])))
         axs[1].axis("off")

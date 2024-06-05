@@ -79,3 +79,63 @@ def reshapePhantomData(original, target, verbose=True):
     reshaped.fill(new_arr)
 
     return reshaped
+
+def reconstructRawPhantomPET(acq_data, template, attn_image, norm_file):
+
+    acq_mod = pPET.AcquisitionModelUsingRayTracingMatrix()
+    acq_mod.set_num_tangential_LORs(10)
+
+    asm_norm = pPET.AcquisitionSensitivityModel(norm_file)
+    asm_norm.set_up(acq_data)
+    acq_model.set_acquisition_sensitivity(asm_norm)
+
+    # create attenuation factors
+    asm_attn = pPET.AcquisitionSensitivityModel(attn_image, acq_model)
+    # converting attenuation image into attenuation factors
+    # (one for every bin)
+    asm_attn.set_up(acq_data)
+    ac_factors = acq_data.get_uniform_copy(value=1)
+    print('applying attenuation (please wait, may take a while)...')
+    asm_attn.unnormalise(ac_factors)
+    asm_attn = pPET.AcquisitionSensitivityModel(ac_factors)
+
+    # chain attenuation and ECAT8 normalisation
+    asm = pPET.AcquisitionSensitivityModel(asm_norm, asm_attn)
+    asm.set_up(acq_data)
+
+    acq_model.set_acquisition_sensitivity(asm)
+
+    # define objective function to be maximized as
+    # Poisson logarithmic likelihood (with linear model for mean)
+    obj_fun = pPET.make_Poisson_loglikelihood(acq_data)
+    obj_fun.set_acquisition_model(acq_model)
+
+    # select Ordered Subsets Maximum A-Posteriori One Step Late as the
+    # reconstruction algorithm (since we are not using a penalty,
+    # or prior, in this example, we actually run OSEM);
+    # this algorithm does not converge to the maximum of the objective
+    # function but is used in practice to speed-up calculations
+    # See the reconstruction demos for more complicated examples
+    num_subsets = 1
+    num_subiterations = 12
+    recon = pPET.OSMAPOSLReconstructor()
+    recon.set_objective_function(obj_fun)
+    recon.set_num_subsets(num_subsets)
+    recon.set_num_subiterations(num_subiterations)
+
+    # set up the reconstructor based on a sample image
+    # (checks the validity of parameters, sets up objective function
+    # and other objects involved in the reconstruction, which involves
+    # computing/reading sensitivity image etc etc.)
+    print('setting up, please wait...')
+    recon.set_up(image)
+
+    # set the initial image estimate
+    recon.set_current_estimate(image)
+
+    # reconstruct
+    print('reconstructing, please wait...')
+    recon.process()
+    out = recon.get_output()
+
+    return out

@@ -114,11 +114,14 @@ def test_imageToSinogram():
     template = tsPET.AcquisitionData(template_path)
 
     raw_pet = tsPT.imageToSinogram(image_data, template, verbose=True)
+    out_name = "raw_pet_motion1.hs"
+    out_path = os.path.join(data_stem, out_name)
+    raw_pet.write(out_path)
 
     assert True
 
 #@pytest.mark.skip()
-def test_createAC_Factors():
+def test_reconstructRawPhantomPET():
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     uMap_name = "uMap_phantom.nii"
     uMap_path = os.path.join(data_stem, uMap_name)
@@ -131,6 +134,18 @@ def test_createAC_Factors():
     print(uMap_image.dimensions())
     uMap_reshaped = tsPT.reshapePhantomData(uMap_image, im_pet)
     print(uMap_reshaped.dimensions())
+
+    path1 = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/cvs/"
+    path2 = "PPA_Anon_CAR12/Data_for_Paul/"
+    cvs_path = os.path.join(path1, path2)
+    name = "30001Tho_PetAcquisition_Raw_Data/attempt2a.n.hdr"
+    norm_file = os.path.join(cvs_path, name)
+
+    PET_name = "raw_pet_motion1.hs"
+    PET_path = os.path.join(data_stem, out_name)
+    raw_pet = tsPET.AcquisitionData(PET_path)
+
+    PET_image = tsPT.reconstructRawPhantomPET(raw_pet, template, uMap_reshaped, norm_file)
 
     assert True
 
