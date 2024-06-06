@@ -9,9 +9,10 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 import sirf.Reg as tf1Reg
+import sirf.STIR as tf1PET
 import utilities as tf1U
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_displaySagittalUmapCut():
     xy_size = 420.0 / 256.0 #mm
     z_size = 3.0 # mm
@@ -30,6 +31,29 @@ def test_displaySagittalUmapCut():
     y = image_shape[1] // 2
     plt.figure()
     tf1U.imshow(np.rot90(uMap_arr[:, y, :], axes=(0,1)), aspect, title)
+    plt.show()
+
+    assert True
+
+#@pytest.mark.skip()
+def test_displayReconstructedPET():
+    data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
+
+    PET_image_name = "pet_motion1_image.hv"
+    PET_image_path = os.path.join(data_stem, PET_image_name)
+
+    PET_image = tf1PET.ImageData(PET_image_path)
+    PET_arr = PET_image.as_array()
+    image_shape = PET_arr.shape
+    print(image_shape)
+
+    # display
+    title = "Transverse cut through PET"
+    z = image_shape[0] // 2
+    x = image_shape[1] // 2
+    y = image_shape[2] // 2
+    plt.figure()
+    tf1U.imshow(PET_arr[z, :, :], None, title)
     plt.show()
 
     assert True

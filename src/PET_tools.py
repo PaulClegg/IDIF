@@ -16,7 +16,7 @@ def create3Dtemplate(data_stem):
     out_path = os.path.join(data_stem, "template3D.hs")
     template.write(out_path)
 
-def imageToSinogram(image_data, template, verbose=True):
+def imageToSinogram(image_data, template, attn_image, norm_file, verbose=True):
 
     im_pet = pPET.ImageData(template)
     if verbose: 
@@ -24,15 +24,35 @@ def imageToSinogram(image_data, template, verbose=True):
         print(f"From template: {im_pet.dimensions()}")
         print(f"From phantom: {image_data.dimensions()}")
 
-    acq_mod = pPET.AcquisitionModelUsingRayTracingMatrix()
-    acq_mod.set_num_tangential_LORs(10)
-    acq_mod.set_up(template, im_pet)
+    acq_model = pPET.AcquisitionModelUsingRayTracingMatrix()
+    acq_model.set_num_tangential_LORs(10)
+    acq_model.set_up(template, im_pet)
+
+    asm_norm = pPET.AcquisitionSensitivityModel(norm_file)
+    asm_norm.set_up(template)
+    acq_model.set_acquisition_sensitivity(asm_norm)
+
+    # create attenuation factors
+    asm_attn = pPET.AcquisitionSensitivityModel(attn_image, acq_model)
+    # converting attenuation image into attenuation factors
+    # (one for every bin)
+    asm_attn.set_up(template)
+    ac_factors = template.get_uniform_copy(value=1)
+    print('applying attenuation (please wait, may take a while)...')
+    asm_attn.unnormalise(ac_factors)
+    asm_attn = pPET.AcquisitionSensitivityModel(ac_factors)
+
+    # chain attenuation and ECAT8 normalisation
+    asm = pPET.AcquisitionSensitivityModel(asm_norm, asm_attn)
+    asm.set_up(template)
+
+    acq_model.set_acquisition_sensitivity(asm)
 
     reshaped = reshapePhantomData(image_data, im_pet)
     if verbose: 
         print(f"From reshaped phantom: {reshaped.dimensions()}")
 
-    raw_pet = acq_mod.forward(reshaped)
+    raw_pet = acq_model.forward(reshaped)
     return raw_pet
 
 def reshapePhantomData(original, target, verbose=True):
@@ -81,9 +101,11 @@ def reshapePhantomData(original, target, verbose=True):
     return reshaped
 
 def reconstructRawPhantomPET(acq_data, template, attn_image, norm_file):
+    nxny = (285,285)
+    image = acq_data.create_uniform_image(1.0, nxny)
 
-    acq_mod = pPET.AcquisitionModelUsingRayTracingMatrix()
-    acq_mod.set_num_tangential_LORs(10)
+    acq_model = pPET.AcquisitionModelUsingRayTracingMatrix()
+    acq_model.set_num_tangential_LORs(10)
 
     asm_norm = pPET.AcquisitionSensitivityModel(norm_file)
     asm_norm.set_up(acq_data)
@@ -116,8 +138,8 @@ def reconstructRawPhantomPET(acq_data, template, attn_image, norm_file):
     # this algorithm does not converge to the maximum of the objective
     # function but is used in practice to speed-up calculations
     # See the reconstruction demos for more complicated examples
-    num_subsets = 1
-    num_subiterations = 12
+    num_subsets = 1 #21 1
+    num_subiterations = 12 #3 
     recon = pPET.OSMAPOSLReconstructor()
     recon.set_objective_function(obj_fun)
     recon.set_num_subsets(num_subsets)
