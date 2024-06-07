@@ -108,7 +108,9 @@ def test_imageToSinogram():
     filename = "phantom_motion1.nii"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     path = os.path.join(data_stem, filename)
-    image_data = tsU.readNiftiImageData(path)
+    phantom_data = tsU.readNiftiImageData(path)
+
+    image_data = tsPT.convertPhantomToActivity(phantom_data)
 
     template_path = os.path.join(data_stem, "template3D.hs")
     template = tsPET.AcquisitionData(template_path)

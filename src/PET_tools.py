@@ -16,6 +16,45 @@ def create3Dtemplate(data_stem):
     out_path = os.path.join(data_stem, "template3D.hs")
     template.write(out_path)
 
+def convertPhantomToActivity(phantom_data, verbose=True):
+    # Data from Christensen et al. Molecular Imaging, 16, 1 (2017)
+    activities = [["Bone", 1, 2.4], # 11-C Palmitate - fatty acid metabolism tracer
+                    ["Fat", 2, 0.0],
+                    ["Skin", 3, 1.0],
+                    ["Colon", 4, 1.6],
+                    ["Gastro", 5, 2.2],
+                    ["Pancreas", 6, 3.0], 
+                    ["Liver", 7, 27.5],
+                    ["Muscle", 8, 2.8],
+                    ["Gallbladder", 9, 4.9],
+                    ["Adrenalgland", 10, 3.4],
+                    ["Vein", 11, 0.0],
+                    ["Kidneys", 12, 5.0],
+                    ["Spleen", 13, 4.2],
+                    ["Artery", 14, 0.0],
+                    ["Ureter", 15, 1.5]]
+    image_data = phantom_data.clone()
+    phantom_arr = phantom_data.as_array()
+    image_arr = np.zeros(phantom_arr.shape)
+
+    z_mid = phantom_arr.shape[0] // 2
+    if verbose:
+        plt.figure()
+        plt.imshow(phantom_arr[z_mid, :, :])
+        plt.show()
+
+    for i in range(len(activities)):
+        image_arr[phantom_arr == (i + 1)] = activities[i][2]
+
+    if verbose:
+        plt.figure()
+        plt.imshow(image_arr[z_mid, :, :])
+        plt.show()
+
+    image_data.fill(image_arr)
+
+    return image_data
+
 def imageToSinogram(image_data, template, attn_image, norm_file, verbose=True):
 
     im_pet = pPET.ImageData(template)
