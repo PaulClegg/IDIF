@@ -5,6 +5,7 @@ To test creation of image data from phantom data
 
 import pytest
 import os
+import numpy as np
 
 import utilities as tsU
 import uMap as tsP
@@ -80,7 +81,7 @@ def test_convertPhantomToT1Values():
 
     assert True
 
-@pytest.mark.skip()
+#@pytest.mark.skip()
 def test_forwardProjectStarvibeMRI():
     filename = "T1_motion1_image.nii"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
@@ -91,8 +92,17 @@ def test_forwardProjectStarvibeMRI():
     raw_path = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/cvs"
     raw_full = os.path.join(raw_path, raw_name)
 
-    raw_mri = tsM.forwardProjectStarvibeMRI(T1_image, raw_path, raw_full,
+    #raw_mri = tsM.forwardProjectStarvibeMRI(T1_image, raw_path, raw_full,
+    bwd_mr = tsM.forwardProjectStarvibeMRI(T1_image, raw_path, raw_full,
         verbose=True)
+    bwd_arr = np.abs(bwd_mr.as_array())
+    print(bwd_arr.shape)
+    path = os.path.join(raw_path, "starVIBE_twelve_1_real.nii")
+    cvs_image = tsU.readNiftiImageData(path)
+    T1_out = cvs_image.clone()
+    print(T1_out.dimensions())
+    T1_out.fill(bwd_arr)
+    T1_out.write(os.path.join(data_stem, "T1_motion1_projected.nii"))
 
     assert True
 
@@ -136,7 +146,7 @@ def test_imageToSinogram():
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_reconstructRawPhantomPET():
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     uMap_name = "uMap_phantom.nii"

@@ -36,6 +36,29 @@ def test_displaySagittalUmapCut():
     assert True
 
 #@pytest.mark.skip()
+def test_displayProjectedMRI():
+    data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
+    mri_name = "T1_motion1_projected.nii"
+    #mri_name = "T1_motion1_image.nii"
+    path = os.path.join(data_stem, mri_name)
+
+    mri_image = tf1Reg.ImageData(path)
+    mri_arr = mri_image.as_array()
+    image_shape = mri_arr.shape
+    print(image_shape)
+    print(np.abs(mri_arr.max()))
+    print(np.abs(mri_arr.min()))
+
+    # display
+    title = "Transverse cut through T1 mri"
+    z = image_shape[0] // 2
+    plt.figure()
+    tf1U.imshow(mri_arr[z, :, :], aspect=None, title=title)
+    plt.show()
+
+    assert True
+
+@pytest.mark.skip()
 def test_displayReconstructedPET():
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
 
