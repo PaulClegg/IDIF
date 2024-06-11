@@ -3,6 +3,7 @@ file: utilities.py
 Generic reading, writing and display functions
 """
 
+import os
 import numpy as np
 import nibabel as nib
 from matplotlib import pyplot as plt
@@ -57,3 +58,18 @@ def makeNiftiImageReal(filename):
 
     return out_name
  
+def saveGadgetronImageAsRegNifti(image_data, data_stem, filename):
+    assert filename.split(".")[1] == "nii", "utilities, *.nii filename only"
+    
+    mri_template_image = "starVIBE_twelve_1_real.nii"
+    cvs_path = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/cvs"
+    path = os.path.join(cvs_path, mri_template_image)
+
+    assert os.path.isfile(path), "utilities: template mri file doesn't exist"
+    cvs_image = readNiftiImageData(path)
+
+    image_arr = image_data.as_array()
+    reg_out = cvs_image.clone()
+    reg_out.fill(image_arr)
+    reg_out.write(os.path.join(data_stem, filename))
+

@@ -181,8 +181,7 @@ def forwardProjectStarvibeMRI(MRI_image, data_path, acq_file, verbose=True):
 
         plt.show()
 
-    #return raw_mri
-    return bwd_mr
+    return raw_mri
 
 def calc_rad_traj_golden(ad):
     # Trajectory for Golden angle radial acquisitions
