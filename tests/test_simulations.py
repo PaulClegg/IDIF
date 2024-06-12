@@ -88,12 +88,10 @@ def test_forwardProjectStarvibeMRI():
     path = os.path.join(data_stem, filename)
     T1_image = tsU.readNiftiImageData(path)
 
-    raw_name = "starVIBE.dat"
-    raw_path = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/cvs"
-    raw_full = os.path.join(raw_path, raw_name)
+    raw_name = "phantom_template.h5"
+    raw_full = os.path.join(data_stem, raw_name)
 
-    raw_mri = tsM.forwardProjectStarvibeMRI(T1_image, raw_path, raw_full,
-        verbose=True)
+    bwd_mr = tsM.forwardProjectStarvibeMRI(T1_image, raw_full, verbose=True)
     #tsU.saveGadgetronImageAsRegNifti(bwd_mr, data_stem, "T1_motion1_projected.nii")
 
     assert True

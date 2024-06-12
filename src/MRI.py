@@ -80,11 +80,15 @@ def divideLineIntoChunks(line, verbose=True):
 
     return [name, num, T1, T2, ADC, PDFF]
 
-def forwardProjectStarvibeMRI(MRI_image, data_path, acq_file, verbose=True):
+def forwardProjectStarvibeMRI(MRI_image, acq_file, verbose=True):
     # I need an acquisition model for the StarVIBE data
     acq_data = mMR.AcquisitionData(acq_file, False,
         ignored=mMR.IgnoreMask(19))
     acq_data.sort_by_time()
+   
+    if verbose:
+        print(acq_data.get_header())
+
     # Now we create the trajectory and set it
     ktraj = calc_rad_traj_golden(acq_data)
     mMR.set_radial2D_trajectory(acq_data, ktraj)
@@ -181,7 +185,7 @@ def forwardProjectStarvibeMRI(MRI_image, data_path, acq_file, verbose=True):
 
         plt.show()
 
-    return raw_mri
+    return bwd_mr
 
 def calc_rad_traj_golden(ad):
     # Trajectory for Golden angle radial acquisitions

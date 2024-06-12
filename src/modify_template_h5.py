@@ -17,6 +17,61 @@ def makeFilenameForStarVIBE():
 
     return filename
 
+def changeFieldOfView_mmForStarVIBE():
+    filename = makeFilenameForStarVIBE()
+
+    f = h5.File(filename, "r+", libver="latest")
+    print(f.name)
+    print(list(f.keys()))
+    print(f["dataset"])
+    print(list(f["dataset"].keys()))
+    print(f["dataset"]["data"])
+    print(f["dataset"]["waveforms"])
+    print(f["dataset"]["xml"])
+
+    # Try to find the column headers within "xml"
+    xml = f["dataset"]["xml"][0].decode('UTF-8')
+    print(type(xml))
+
+    # Print everything between <encoding> and <encodingLimits>
+
+    lower = xml.split("<encoding>")[1]
+    encoding = lower.split("<encodingLimits>")[0]
+    print(encoding)
+
+    # Change <x>500.000000</x> to <x>420.000000</x>
+    print(xml.count("<x>500.000000</x>"))
+    xml_encoded = xml.replace("<x>500.000000</x>", "<x>420.000000</x>")
+
+    # Change <y>500.000000</y> to <y>420.000000</y>
+    print(xml.count("<y>500.000000</y>"))
+    xml_encoded = xml_encoded.replace("<y>500.000000</y>", "<y>420.000000</y>")
+
+    # Change <z>272.799988</z> to <z>192.000000</z>
+    print(xml.count("<z>272.799988</z>"))
+    xml_encoded = xml_encoded.replace("<z>272.799988</z>", "<z>192.000000</z>")
+
+    # Change <z>248.000000</z> to <z>192.000000</z>
+    print(xml_encoded.count("<z>248.000000</z>"))
+    xml_corrected = xml_encoded.replace("<z>248.000000</z>", "<z>192.000000</z>")
+
+    # Check change - compare with original
+    lower = xml_corrected.split("<encoding>")[1]
+    encoding = lower.split("<encodingLimits>")[0]
+    print(encoding)
+    
+    # Convert xml back to bytes
+    xml = bytes(xml_corrected,'UTF-8')
+    print(type(xml))
+
+    # Return to dataset
+    f["dataset"]["xml"][0] = xml
+    print(f["dataset"]["xml"])
+
+    # Save updated h5 file
+
+    f.close()
+
 def changeMatrixSizeForStarVIBE():
     filename = makeFilenameForStarVIBE()
 
@@ -233,4 +288,5 @@ if __name__ == "__main__":
     #ECGforStarVIBE()
     #extractSpokeTimes()
     #changeMatrixSizeForStarVIBE()
-    showDataHeadings()
+    #showDataHeadings()
+    changeFieldOfView_mmForStarVIBE()
