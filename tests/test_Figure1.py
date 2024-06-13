@@ -35,7 +35,7 @@ def test_displaySagittalUmapCut():
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_displayProjectedMRI():
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     mri_name = "T1_motion1_projected.nii"
@@ -52,13 +52,15 @@ def test_displayProjectedMRI():
     # display
     title = "Transverse cut through T1 mri"
     z = image_shape[0] // 2
+    z = 21 # For portal vein
+    print(z)
     plt.figure()
     tf1U.imshow(mri_arr[z, :, :], aspect=None, title=title)
     plt.show()
 
     assert True
 
-@pytest.mark.skip()
+#@pytest.mark.skip()
 def test_displayReconstructedPET():
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
 
@@ -73,8 +75,8 @@ def test_displayReconstructedPET():
     # display
     title = "Transverse cut through PET"
     z = image_shape[0] // 2
-    x = image_shape[1] // 2
-    y = image_shape[2] // 2
+    z = 71
+    print(z)
     plt.figure()
     tf1U.imshow(PET_arr[z, :, :], None, title)
     plt.show()

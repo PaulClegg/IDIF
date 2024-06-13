@@ -81,7 +81,7 @@ def test_convertPhantomToT1Values():
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_forwardProjectStarvibeMRI():
     filename = "T1_motion1_image.nii"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
@@ -103,7 +103,7 @@ def test_create3Dtemplate():
 
     assert True
 
-@pytest.mark.skip()
+#@pytest.mark.skip()
 def test_imageToSinogram():
     filename = "phantom_motion1.nii"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
@@ -115,6 +115,9 @@ def test_imageToSinogram():
     template_path = os.path.join(data_stem, "template3D.hs")
     template = tsPET.AcquisitionData(template_path)
     im_pet = tsPET.ImageData(template)
+    print("\n im_pet.dimensions() \n", im_pet.dimensions(), "\n")
+    voxels_PET = im_pet.voxel_sizes()
+    print("\n im_pet.voxel_sizes() \n", voxels_PET, "\n")
 
     uMap_name = "uMap_phantom.nii"
     uMap_path = os.path.join(data_stem, uMap_name)
