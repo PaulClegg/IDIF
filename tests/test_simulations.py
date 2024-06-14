@@ -103,7 +103,7 @@ def test_create3Dtemplate():
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_imageToSinogram():
     filename = "phantom_motion1.nii"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
@@ -139,7 +139,7 @@ def test_imageToSinogram():
 
     assert True
 
-@pytest.mark.skip()
+#@pytest.mark.skip()
 def test_reconstructRawPhantomPET():
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     uMap_name = "uMap_phantom.nii"

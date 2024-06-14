@@ -97,12 +97,19 @@ def imageToSinogram(image_data, template, attn_image, norm_file, verbose=True):
 def reshapePhantomData(original, target, verbose=True):
 
     orig_arr = original.as_array()
-    reshaped_arr = np.zeros((orig_arr.shape[2], orig_arr.shape[0], 
-        orig_arr.shape[1]))
-    for z in range(orig_arr.shape[2]):
-        reshaped_arr[z, :, :] = orig_arr[:, :, z]
-    ln = orig_arr.shape[0]
-    lslice = orig_arr.shape[2]
+    # Here pad data with zeros - to get to correct size
+    padded_arr = np.zeros((362, 362, 86)) # to give correct sizes
+    x_start = 53; y_start = 53; z_start = 11
+    Dx = orig_arr.shape[0]; Dy = orig_arr.shape[1]; Dz = orig_arr.shape[2]
+    padded_arr[x_start:(Dx + x_start), y_start:(Dy + y_start), z_start:(Dz + z_start)] =\
+        orig_arr[:, :, :]
+
+    reshaped_arr = np.zeros((padded_arr.shape[2], padded_arr.shape[0], 
+        padded_arr.shape[1]))
+    for z in range(padded_arr.shape[2]):
+        reshaped_arr[z, :, :] = padded_arr[:, :, z]
+    ln = padded_arr.shape[0]
+    lslice = padded_arr.shape[2]
     ln_out = target.dimensions()[1]
     lslice_out = target.dimensions()[0]
     x_new = np.linspace(0, (ln-1), ln_out)

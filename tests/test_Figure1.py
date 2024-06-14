@@ -8,29 +8,42 @@ import os
 from matplotlib import pyplot as plt
 import numpy as np
 
+import PET_tools as tf1PT
+
 import sirf.Reg as tf1Reg
 import sirf.STIR as tf1PET
 import utilities as tf1U
 
-@pytest.mark.skip()
+#@pytest.mark.skip()
 def test_displaySagittalUmapCut():
-    xy_size = 420.0 / 256.0 #mm
-    z_size = 3.0 # mm
+    #xy_size = 420.0 / 256.0 #mm
+    #z_size = 3.0 # mm
+    xy_size = 2.08626 #mm
+    z_size = 2.03125 # mm
     aspect = z_size / xy_size
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     uMap_name = "uMap_phantom.nii"
     path = os.path.join(data_stem, uMap_name)
 
     uMap_image = tf1Reg.ImageData(path)
-    uMap_arr = uMap_image.as_array()
+
+    template_path = os.path.join(data_stem, "template3D.hs")
+    template = tf1PET.AcquisitionData(template_path)
+    im_pet = tf1PET.ImageData(template)
+
+    print(uMap_image.dimensions())
+    uMap_reshaped = tf1PT.reshapePhantomData(uMap_image, im_pet)
+
+    uMap_arr = uMap_reshaped.as_array()
+    #uMap_arr = uMap_image.as_array()
     image_shape = uMap_arr.shape
     print(image_shape)
 
     # display
     title = "Sagittal cut through u-map"
-    y = image_shape[1] // 2
+    y = image_shape[2] // 2
     plt.figure()
-    tf1U.imshow(np.rot90(uMap_arr[:, y, :], axes=(0,1)), aspect, title)
+    tf1U.imshow(np.flip(uMap_arr[:, :, y], axis=0), aspect, title)
     plt.show()
 
     assert True
@@ -60,7 +73,7 @@ def test_displayProjectedMRI():
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_displayReconstructedPET():
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
 
@@ -75,7 +88,7 @@ def test_displayReconstructedPET():
     # display
     title = "Transverse cut through PET"
     z = image_shape[0] // 2
-    z = 71
+    z = 86
     print(z)
     plt.figure()
     tf1U.imshow(PET_arr[z, :, :], None, title)
