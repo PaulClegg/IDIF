@@ -14,7 +14,7 @@ import sirf.Reg as tf1Reg
 import sirf.STIR as tf1PET
 import utilities as tf1U
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_displaySagittalUmapCut():
     #xy_size = 420.0 / 256.0 #mm
     #z_size = 3.0 # mm
@@ -73,7 +73,7 @@ def test_displayProjectedMRI():
 
     assert True
 
-@pytest.mark.skip()
+#@pytest.mark.skip()
 def test_displayReconstructedPET():
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
 
@@ -88,7 +88,7 @@ def test_displayReconstructedPET():
     # display
     title = "Transverse cut through PET"
     z = image_shape[0] // 2
-    z = 86
+    z = 69
     print(z)
     plt.figure()
     tf1U.imshow(PET_arr[z, :, :], None, title)
