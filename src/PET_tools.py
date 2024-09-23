@@ -207,3 +207,8 @@ def reconstructRawPhantomPET(acq_data, template, attn_image, norm_file):
     out = recon.get_output()
 
     return out
+
+def createBloodCurves():
+
+    time = np.linspace(0.0, 3600.0, 3601)
+

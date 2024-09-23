@@ -139,7 +139,7 @@ def test_imageToSinogram():
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_reconstructRawPhantomPET():
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     uMap_name = "uMap_phantom.nii"
@@ -171,3 +171,9 @@ def test_reconstructRawPhantomPET():
 
     assert True
 
+#@pytest.mark.skip()
+def test_creationOfBloodCurvesForPET():
+
+    tsPT.createBloodCurves()
+
+    assert True
