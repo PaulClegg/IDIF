@@ -211,4 +211,38 @@ def reconstructRawPhantomPET(acq_data, template, attn_image, norm_file):
 def createBloodCurves():
 
     time = np.linspace(0.0, 3600.0, 3601)
+    t0 = 20.0
+    A1 = 0.1
+    A2 = 3.0
+    A3 = 1.0
+    l1 = 0.0001
+    l2 = 0.01
+    l3 = 0.1 
+    l4 = 0.5
+    assert (A1 + A2 + A3) * l4 - A1 * l1 - A2 * l2 - A3 * l3 > 0.0, "Unphysiological!"
+    feng1 = A1 * np.exp(-l1 * (time - t0)) + A2 * np.exp(-l2 * (time - t0))
+    feng1 += A3 * np.exp(-l3 * (time - t0)) -(A1 + A2 + A3) * np.exp(-l4 * (time - t0))
+    feng1[time < t0] = 0.0
+    feng1 *= 120.0
 
+    A1 = 0.1
+    A2 = 3.0
+    A3 = 1.0
+    l1 = 0.0001
+    l2 = 0.01
+    l3 = 0.1 
+    l4 = 0.07
+    assert (A1 + A2 + A3) * l4 - A1 * l1 - A2 * l2 - A3 * l3 > 0.0, "Unphysiological!"
+    feng2 = A1 * np.exp(-l1 * (time - t0)) + A2 * np.exp(-l2 * (time - t0))
+    feng2 += A3 * np.exp(-l3 * (time - t0)) -(A1 + A2 + A3) * np.exp(-l4 * (time - t0))
+    feng2[time < t0] = 0.0
+    feng2 *= 120.0
+
+    plt.figure()
+    plt.plot(time, feng1, color="r", label="Artery")
+    plt.plot(time, feng2, color="b", label="Portal Vein")
+    plt.xlim([0.0, 600.0])
+    plt.legend()
+    plt.xlabel("Time (sec)")
+    plt.ylabel("Activity conc. (Bq/mL)")
+    plt.show()
