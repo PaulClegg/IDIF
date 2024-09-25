@@ -55,6 +55,16 @@ def convertPhantomToActivity(phantom_data, verbose=True):
 
     return image_data
 
+def isolatePortalVein(phantom_data):
+    phantom_arr = phantom_data.as_array()
+    phantom_arr[phantom_arr == 11] = 100
+
+    for i in range(30, 40, 1):
+        plt.figure()
+        plt.imshow(phantom_arr[:, :, i])
+        
+    plt.show()
+
 def imageToSinogram(image_data, template, attn_image, norm_file, verbose=True):
 
     im_pet = pPET.ImageData(template)

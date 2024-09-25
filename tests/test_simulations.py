@@ -171,9 +171,22 @@ def test_reconstructRawPhantomPET():
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_creationOfBloodCurvesForPET():
 
     tsPT.createBloodCurves()
+
+    assert True
+
+#@pytest.mark.skip()
+def test_isolatePortalVein():
+    filename = "phantom_motion1.nii"
+    data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
+    path = os.path.join(data_stem, filename)
+    phantom_data = tsU.readNiftiImageData(path)
+
+    image_data = tsPT.convertPhantomToActivity(phantom_data)
+
+    tsPT.isolatePortalVein(phantom_data)
 
     assert True
