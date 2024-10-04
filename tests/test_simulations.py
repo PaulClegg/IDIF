@@ -180,12 +180,10 @@ def test_creationOfBloodCurvesForPET():
 
 #@pytest.mark.skip()
 def test_isolatePortalVein():
-    filename = "phantom_motion1.nii"
+    filename = "separate_veins_10.nii"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     path = os.path.join(data_stem, filename)
     phantom_data = tsU.readNiftiImageData(path)
-
-    image_data = tsPT.convertPhantomToActivity(phantom_data)
 
     tsPT.isolatePortalVein(phantom_data)
 
