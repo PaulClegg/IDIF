@@ -6,6 +6,7 @@ To test creation of image data from phantom data
 import pytest
 import os
 import numpy as np
+from matplotlib import pyplot as plt
 
 import utilities as tsU
 import uMap as tsP
@@ -174,11 +175,13 @@ def test_reconstructRawPhantomPET():
 @pytest.mark.skip()
 def test_creationOfBloodCurvesForPET():
 
-    tsPT.createBloodCurves()
+    time = np.linspace(0.0, 3600.0, 3601)
+
+    feng1, feng2 = tsPT.createBloodCurves(time)
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_isolatePortalVein():
     filename = "separate_veins_10.nii"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
@@ -188,3 +191,26 @@ def test_isolatePortalVein():
     tsPT.isolatePortalVein(phantom_data)
 
     assert True
+
+#@pytest.mark.skip()
+def test_returnFrameTimes():
+    
+    times = tsPT.returnFrameTimes()
+    print(times)
+    feng1_framed, feng2_framed = tsPT.createBloodCurves(times, verbose=False)
+
+    time = np.linspace(0.0, 3600.0, 3601)
+    feng1_full, feng2_full = tsPT.createBloodCurves(time, verbose=False)
+
+    plt.figure()
+    plt.semilogx(time, feng1_full, color="r", label="Artery")
+    plt.semilogx(time, feng2_full, color="b", label="Portal Vein")
+    plt.scatter(times, feng1_framed, marker="o", color="r", label="Artery framed")
+    plt.scatter(times, feng2_framed, marker="o", color="b", label="Portal Vein framed")
+    plt.legend()
+    plt.xlabel("Time (sec)")
+    plt.ylabel("Activity conc. (Bq/mL)")
+    plt.show()
+
+    assert True
+

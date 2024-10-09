@@ -220,9 +220,8 @@ def reconstructRawPhantomPET(acq_data, template, attn_image, norm_file):
 
     return out
 
-def createBloodCurves():
+def createBloodCurves(time, verbose=True):
 
-    time = np.linspace(0.0, 3600.0, 3601)
     t0 = 20.0
     A1 = 0.1
     A2 = 3.0
@@ -250,11 +249,35 @@ def createBloodCurves():
     feng2[time < t0] = 0.0
     feng2 *= 120.0
 
-    plt.figure()
-    plt.plot(time, feng1, color="r", label="Artery")
-    plt.plot(time, feng2, color="b", label="Portal Vein")
-    plt.xlim([0.0, 600.0])
-    plt.legend()
-    plt.xlabel("Time (sec)")
-    plt.ylabel("Activity conc. (Bq/mL)")
-    plt.show()
+    if verbose:
+        plt.figure()
+        plt.plot(time, feng1, color="r", label="Artery")
+        plt.plot(time, feng2, color="b", label="Portal Vein")
+        plt.xlim([0.0, 600.0])
+        plt.legend()
+        plt.xlabel("Time (sec)")
+        plt.ylabel("Activity conc. (Bq/mL)")
+        plt.show()
+
+    return feng1, feng2
+
+def returnFrameTimes():
+
+    times = np.zeros(20)
+    durations = np.zeros(20)
+    # Framing from: Iozzo et al GASTROENTEROLOGY 2010;139:846–856
+    durations[0:8] = 15.0
+    durations[8:10] = 30.0
+    durations[10:12] = 120.0
+    durations[12] = 180.0
+    durations[13:19] = 300.0
+    durations[19] = 600.0
+
+    print(f"Scan duration: {sum(durations)}")
+    
+    previous = 0.0
+    for i, full in enumerate(durations):
+        times[i] = previous + full / 2.0
+        previous += full
+
+    return times
