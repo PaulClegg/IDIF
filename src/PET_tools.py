@@ -55,17 +55,32 @@ def convertPhantomToActivity(phantom_data, verbose=True):
 
     return image_data
 
-def isolatePortalVein(phantom_data):
+def isolatePortalVein(phantom_data, verbose=True):
     phantom_arr = phantom_data.as_array()
     print(f"Max value = {phantom_arr.max()}")
     phantom_arr[phantom_arr > 20] += 10
     ### Region 43 appears to be the portal vein ###
 
-    for i in range(30, 40, 1):
-        plt.figure()
-        plt.imshow(phantom_arr[:, :, i])
-        
-    plt.show()
+    if verbose:
+        for i in range(30, 40, 1):
+            plt.figure()
+            plt.imshow(phantom_arr[:, :, i])
+            
+        plt.show()
+
+    portal_data = phantom_data.clone()
+    portal_data.fill(phantom_arr)
+
+    return portal_data
+
+def changeActivityInSingleRegion(phantom_data, region, newActivity):
+    phantom_arr = phantom_data.as_array()
+    phantom_arr[phantom_arr == region] = newActivity
+
+    new_phantom = phantom_data.clone()
+    new_phantom.fill(phantom_arr)
+
+    return new_phantom
 
 def imageToSinogram(image_data, template, attn_image, norm_file, verbose=True):
 
@@ -280,4 +295,27 @@ def returnFrameTimes():
         times[i] = previous + full / 2.0
         previous += full
 
-    return times
+    return times, durations
+
+def returnFrameValues(full_time, full_activity, frame_times, 
+    frame_durations, verbose=True):
+
+    assert (full_time[1] - full_time[0]) == 1.0, "Require one point every second"
+
+    frame_activities = np.zeros(len(frame_times))
+    for i, t in enumerate(frame_times):
+        start = int(frame_times[i] - (frame_durations[i] / 2.0))
+        stop = int(frame_times[i] + (frame_durations[i] / 2.0))
+        frame_activities[i] = np.mean(full_activity[start:stop])
+        
+
+    if verbose:
+        plt.figure()
+        plt.semilogx(full_time, full_activity, color="r", label="Continuous")
+        plt.scatter(frame_times, frame_activities, marker="o", color="r", label="Framed")
+        plt.legend()
+        plt.xlabel("Time (sec)")
+        plt.ylabel("Activity conc. (Bq/mL)")
+        plt.show()
+
+    return frame_activities

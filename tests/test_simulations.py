@@ -188,14 +188,14 @@ def test_isolatePortalVein():
     path = os.path.join(data_stem, filename)
     phantom_data = tsU.readNiftiImageData(path)
 
-    tsPT.isolatePortalVein(phantom_data)
+    portal_data = tsPT.isolatePortalVein(phantom_data)
 
     assert True
 
 #@pytest.mark.skip()
-def test_returnFrameTimes():
+def test_creatingFrames():
     
-    times = tsPT.returnFrameTimes()
+    times, durations = tsPT.returnFrameTimes()
     print(times)
     feng1_framed, feng2_framed = tsPT.createBloodCurves(times, verbose=False)
 
@@ -210,6 +210,35 @@ def test_returnFrameTimes():
     plt.legend()
     plt.xlabel("Time (sec)")
     plt.ylabel("Activity conc. (Bq/mL)")
+    plt.show()
+
+    filename = "separate_veins_1.nii"
+    data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
+    path = os.path.join(data_stem, filename)
+    phantom_data = tsU.readNiftiImageData(path)
+    portal_data = tsPT.isolatePortalVein(phantom_data, verbose = False)
+
+    frame_activities = tsPT.returnFrameValues(time, feng2_full,
+        times, durations)
+    print(frame_activities)
+
+    frame_dim = portal_data.dimensions()
+    print(frame_dim)
+    dynamic_data = np.zeros((len(frame_activities), frame_dim[0], frame_dim[1]))
+    i = 0
+    for activity in frame_activities:
+        frame = tsPT.changeActivityInSingleRegion(portal_data, 43, activity)
+        dynamic_data[i, :, :] = frame.as_array()[:, :, 37]
+        i += 1
+
+    # might be able to refind this by copying "im=plt.imshow(c)" into google
+    c=dynamic_data[0]
+    c=c.reshape(frame_dim[0], frame_dim[1]) # this is the size of my pictures
+    im=plt.imshow(c)
+    for row in dynamic_data:
+        row=row.reshape(frame_dim[0], frame_dim[1]) # this is the size of my pictures
+        im.set_data(row)
+        plt.pause(0.02)
     plt.show()
 
     assert True
