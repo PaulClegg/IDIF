@@ -238,7 +238,7 @@ def test_creatingFrames():
     for row in dynamic_data:
         row=row.reshape(frame_dim[0], frame_dim[1]) # this is the size of my pictures
         im.set_data(row)
-        plt.pause(0.02)
+        plt.pause(0.5)
     plt.show()
 
     assert True
