@@ -192,7 +192,7 @@ def test_isolatePortalVein():
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_creatingFrames():
     
     times, durations = tsPT.returnFrameTimes()
@@ -231,15 +231,45 @@ def test_creatingFrames():
         dynamic_data[i, :, :] = frame.as_array()[:, :, 37]
         i += 1
 
-    # might be able to refind this by copying "im=plt.imshow(c)" into google
+    dynamic_data += 1e-6 # for log intensity scale
     c=dynamic_data[0]
     c=c.reshape(frame_dim[0], frame_dim[1]) # this is the size of my pictures
-    im=plt.imshow(c)
+    im=plt.imshow(c, norm="log", vmin=0.01, vmax=225.0)
     for row in dynamic_data:
         row=row.reshape(frame_dim[0], frame_dim[1]) # this is the size of my pictures
         im.set_data(row)
         plt.pause(0.5)
     plt.show()
+
+    assert True
+
+#@pytest.mark.skip()
+def test_averagingAcrossMotionStates():
+    times, durations = tsPT.returnFrameTimes()
+    feng1_framed, feng2_framed = tsPT.createBloodCurves(times, verbose=False)
+    time = np.linspace(0.0, 3600.0, 3601)
+    feng1_full, feng2_full = tsPT.createBloodCurves(time, verbose=False)
+    frame_activities = tsPT.returnFrameValues(time, feng2_full,
+        times, durations)
+
+    stem = "separate_veins_"
+    data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
+
+    for j, activity in enumerate(frame_activities):
+        for i in range(1, 11, 1):
+            filename = stem + str(i) + ".nii"
+            path = os.path.join(data_stem, filename)
+            phantom_data = tsU.readNiftiImageData(path)
+            portal_data = tsPT.isolatePortalVein(phantom_data, verbose = False)
+            if i == 1:
+                frame = tsPT.changeActivityInSingleRegion(portal_data, 43, activity)
+            else:
+                working = tsPT.changeActivityInSingleRegion(portal_data, 43, activity)
+                curr_arr = frame.as_array()
+                curr_arr += working.as_array()
+                frame.fill(curr_arr)
+        out_name = os.path.join(data_stem, "frame_" + str(j) + ".nii")
+        frame.write(out_name)
 
     assert True
 

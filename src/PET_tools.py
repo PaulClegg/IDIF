@@ -58,7 +58,9 @@ def convertPhantomToActivity(phantom_data, verbose=True):
 def isolatePortalVein(phantom_data, verbose=True):
     phantom_arr = phantom_data.as_array()
     print(f"Max value = {phantom_arr.max()}")
-    phantom_arr[phantom_arr > 20] += 10
+    phantom_arr[phantom_arr == 33] = -5
+    phantom_arr[phantom_arr > 20] = 11 # Original vein label
+    phantom_arr[phantom_arr == -5] = 43
     ### Region 43 appears to be the portal vein ###
 
     if verbose:
