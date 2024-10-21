@@ -243,7 +243,7 @@ def test_creatingFrames():
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_averagingAcrossMotionStates():
     times, durations = tsPT.returnFrameTimes()
     feng1_framed, feng2_framed = tsPT.createBloodCurves(times, verbose=False)
@@ -254,22 +254,60 @@ def test_averagingAcrossMotionStates():
 
     stem = "separate_veins_"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
+    states = 10
 
     for j, activity in enumerate(frame_activities):
-        for i in range(1, 11, 1):
+        for i in range(1, states + 1, 1):
             filename = stem + str(i) + ".nii"
             path = os.path.join(data_stem, filename)
             phantom_data = tsU.readNiftiImageData(path)
             portal_data = tsPT.isolatePortalVein(phantom_data, verbose = False)
             if i == 1:
                 frame = tsPT.changeActivityInSingleRegion(portal_data, 43, activity)
+                curr_arr = frame.as_array() / states
+                frame.fill(curr_arr)
             else:
                 working = tsPT.changeActivityInSingleRegion(portal_data, 43, activity)
                 curr_arr = frame.as_array()
-                curr_arr += working.as_array()
+                curr_arr += working.as_array() / states
                 frame.fill(curr_arr)
         out_name = os.path.join(data_stem, "frame_" + str(j) + ".nii")
         frame.write(out_name)
 
     assert True
 
+@pytest.mark.skip()
+def test_displayNiftiAverageFrame():
+    filename = "frame_0.nii"
+    data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
+    path = os.path.join(data_stem, filename)
+    image = tsU.readNiftiImageData(path)
+
+    tsU.displayRegImageData(image, title="Time averaged kinetic data")
+
+    assert True
+    
+#@pytest.mark.skip()
+def test_displayMovieOfAverageFrames():
+    frames = int(20)
+    frame_dim = int(256)
+    data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
+    dynamic_data = np.zeros((frames, frame_dim, frame_dim))
+    for im in range(frames):
+        filename = "frame_" + str(im) + ".nii"
+        path = os.path.join(data_stem, filename)
+        image = tsU.readNiftiImageData(path)
+        dynamic_data[im, :, :] = image.as_array()[:, :, 36]
+
+    dynamic_data += 1e-6 # for log intensity scale
+    c=dynamic_data[0]
+    c=c.reshape(frame_dim, frame_dim) # this is the size of my pictures
+    im=plt.imshow(c, norm="log", vmin=0.01, vmax=225.0)
+    for row in dynamic_data:
+        row=row.reshape(frame_dim, frame_dim) # this is the size of my pictures
+        im.set_data(row)
+        plt.pause(0.5)
+    plt.show()
+
+    assert True
+    
