@@ -192,6 +192,17 @@ def test_isolatePortalVein():
 
     assert True
 
+#@pytest.mark.skip()
+def test_isolateHepaticArtery():
+    filename = "hepatic_motion_1.nii"
+    data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
+    path = os.path.join(data_stem, filename)
+    phantom_data = tsU.readNiftiImageData(path)
+
+    hepatic_data = tsPT.isolateHepaticArtery(phantom_data)
+
+    assert True
+
 @pytest.mark.skip()
 def test_creatingFrames():
     
@@ -278,7 +289,7 @@ def test_averagingAcrossMotionStates():
 
 @pytest.mark.skip()
 def test_displayNiftiAverageFrame():
-    filename = "frame_0.nii"
+    filename = "frame_2.nii"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     path = os.path.join(data_stem, filename)
     image = tsU.readNiftiImageData(path)
@@ -287,7 +298,7 @@ def test_displayNiftiAverageFrame():
 
     assert True
     
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_displayMovieOfAverageFrames():
     frames = int(20)
     frame_dim = int(256)

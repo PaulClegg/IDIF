@@ -75,6 +75,25 @@ def isolatePortalVein(phantom_data, verbose=True):
 
     return portal_data
 
+def isolateHepaticArtery(phantom_data, verbose=True):
+    phantom_arr = phantom_data.as_array()
+    print(f"Max value = {phantom_arr.max()}")
+    phantom_arr[phantom_arr == 105] = -5
+    phantom_arr[phantom_arr > 50] = 14 # Original vein label
+    phantom_arr[phantom_arr == -5] = 105
+    ### Region 105 appears to be the hepatic artery + larger structures ###
+
+    if verbose:
+        for i in range(30, 40, 1):
+            plt.figure()
+            plt.imshow(phantom_arr[:, :, i])
+            
+        plt.show()
+
+    hepatic_data = phantom_data.clone()
+
+    return hepatic_data
+
 def changeActivityInSingleRegion(phantom_data, region, newActivity):
     phantom_arr = phantom_data.as_array()
     phantom_arr[phantom_arr == region] = newActivity
