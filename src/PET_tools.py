@@ -297,6 +297,34 @@ def createBloodCurves(time, verbose=True):
 
     return feng1, feng2
 
+def createLiverCurve(feng1, feng2, time, verbose = True):
+    liver = np.zeros(len(feng1))
+
+    blood = 0.75 * feng2 + 0.25 * feng1
+    A = 0.9; B = 0.0005; C = 0.1; D = 1E-4
+    residue = A * np.exp(-B * time) + C * np.exp(-D * time)
+    long_blood = np.zeros(3 * len(blood))
+    long_blood[len(blood):(2 * len(blood))] = blood
+
+    liver = np.convolve(residue, long_blood, mode="valid")[0:len(time)]
+    liver *= 200.0 / liver.max()
+
+    if verbose:
+        print("\n")
+        print(f"Length liver: {len(liver)}")
+        print(f"Length time: {len(time)}")
+
+        plt.figure()
+        plt.plot(time, blood, color="b", label="Blood")
+        plt.plot(time, residue * (blood.max() / residue.max()), color="r", label="Residue")
+        plt.plot(time, liver, color="g", label="Liver")
+        plt.legend()
+        plt.xlabel("Time (sec)")
+        plt.ylabel("Activity conc. (Bq/mL)")
+        plt.show()
+
+    return liver
+
 def returnFrameTimes():
 
     times = np.zeros(20)

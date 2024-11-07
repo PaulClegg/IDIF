@@ -181,6 +181,15 @@ def test_creationOfBloodCurvesForPET():
 
     assert True
 
+#@pytest.mark.skip()
+def test_creationOfLiverCurveForPET():
+    time = np.linspace(0.0, 3600.0, 3601)
+    feng1, feng2 = tsPT.createBloodCurves(time)
+
+    liver = tsPT.createLiverCurve(feng1, feng2, time)
+
+    assert True
+
 @pytest.mark.skip()
 def test_isolatePortalVein():
     filename = "separate_veins_10.nii"
@@ -192,7 +201,7 @@ def test_isolatePortalVein():
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_isolateHepaticArtery():
     filename = "hepatic_motion_1.nii"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
