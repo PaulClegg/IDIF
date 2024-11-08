@@ -55,12 +55,15 @@ def convertPhantomToActivity(phantom_data, verbose=True):
 
     return image_data
 
-def isolatePortalVein(phantom_data, verbose=True):
+def isolateLiverVessels(phantom_data, verbose=True):
     phantom_arr = phantom_data.as_array()
     print(f"Max value = {phantom_arr.max()}")
     phantom_arr[phantom_arr == 33] = -5
+    phantom_arr[phantom_arr == 105] = -10
+    phantom_arr[phantom_arr > 100] = 14 # Original artery label
     phantom_arr[phantom_arr > 20] = 11 # Original vein label
     phantom_arr[phantom_arr == -5] = 43
+    phantom_arr[phantom_arr == -10] = 105
     ### Region 43 appears to be the portal vein ###
 
     if verbose:
@@ -79,7 +82,7 @@ def isolateHepaticArtery(phantom_data, verbose=True):
     phantom_arr = phantom_data.as_array()
     print(f"Max value = {phantom_arr.max()}")
     phantom_arr[phantom_arr == 105] = -5
-    phantom_arr[phantom_arr > 50] = 14 # Original vein label
+    phantom_arr[phantom_arr > 100] = 14 # Original artery label
     phantom_arr[phantom_arr == -5] = 105
     ### Region 105 appears to be the hepatic artery + larger structures ###
 

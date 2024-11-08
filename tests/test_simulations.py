@@ -181,7 +181,7 @@ def test_creationOfBloodCurvesForPET():
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_creationOfLiverCurveForPET():
     time = np.linspace(0.0, 3600.0, 3601)
     feng1, feng2 = tsPT.createBloodCurves(time)
@@ -191,13 +191,13 @@ def test_creationOfLiverCurveForPET():
     assert True
 
 @pytest.mark.skip()
-def test_isolatePortalVein():
+def test_isolateLiverVessels():
     filename = "separate_veins_10.nii"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     path = os.path.join(data_stem, filename)
     phantom_data = tsU.readNiftiImageData(path)
 
-    portal_data = tsPT.isolatePortalVein(phantom_data)
+    portal_data = tsPT.isolateLiverVessels(phantom_data)
 
     assert True
 
@@ -212,7 +212,7 @@ def test_isolateHepaticArtery():
 
     assert True
 
-@pytest.mark.skip()
+#@pytest.mark.skip()
 def test_creatingFrames():
     
     times, durations = tsPT.returnFrameTimes()
@@ -221,6 +221,7 @@ def test_creatingFrames():
 
     time = np.linspace(0.0, 3600.0, 3601)
     feng1_full, feng2_full = tsPT.createBloodCurves(time, verbose=False)
+    liver_full = tsPT.createLiverCurve(feng1_full, feng2_full, time)
 
     plt.figure()
     plt.semilogx(time, feng1_full, color="r", label="Artery")
@@ -232,22 +233,34 @@ def test_creatingFrames():
     plt.ylabel("Activity conc. (Bq/mL)")
     plt.show()
 
-    filename = "separate_veins_1.nii"
+    #filename = "separate_veins_1.nii"
+    filename = "hepatic_motion_1.nii"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     path = os.path.join(data_stem, filename)
     phantom_data = tsU.readNiftiImageData(path)
-    portal_data = tsPT.isolatePortalVein(phantom_data, verbose = False)
+    # Next line might be redundant
+    portal_data = tsPT.isolateLiverVessels(phantom_data, verbose = False)
 
-    frame_activities = tsPT.returnFrameValues(time, feng2_full,
+    vein_activities = tsPT.returnFrameValues(time, feng2_full,
         times, durations)
-    print(frame_activities)
+    print(vein_activities)
+    artery_activities = tsPT.returnFrameValues(time, feng1_full,
+        times, durations)
+    print(artery_activities)
+    liver_activities = tsPT.returnFrameValues(time, liver_full,
+        times, durations)
+    print(liver_activities)
 
     frame_dim = portal_data.dimensions()
     print(frame_dim)
-    dynamic_data = np.zeros((len(frame_activities), frame_dim[0], frame_dim[1]))
+    dynamic_data = np.zeros((len(vein_activities), frame_dim[0], frame_dim[1]))
     i = 0
-    for activity in frame_activities:
-        frame = tsPT.changeActivityInSingleRegion(portal_data, 43, activity)
+    for cnt, activity in enumerate(vein_activities):
+        portal_data1 = tsPT.changeActivityInSingleRegion(portal_data, 
+            105, artery_activities[cnt])
+        portal_data2 = tsPT.changeActivityInSingleRegion(portal_data1, 
+            7, liver_activities[cnt])
+        frame = tsPT.changeActivityInSingleRegion(portal_data2, 43, activity)
         dynamic_data[i, :, :] = frame.as_array()[:, :, 37]
         i += 1
 
@@ -281,7 +294,7 @@ def test_averagingAcrossMotionStates():
             filename = stem + str(i) + ".nii"
             path = os.path.join(data_stem, filename)
             phantom_data = tsU.readNiftiImageData(path)
-            portal_data = tsPT.isolatePortalVein(phantom_data, verbose = False)
+            portal_data = tsPT.isolateLiverVessels(phantom_data, verbose = False)
             if i == 1:
                 frame = tsPT.changeActivityInSingleRegion(portal_data, 43, activity)
                 curr_arr = frame.as_array() / states
