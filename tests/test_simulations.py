@@ -212,7 +212,7 @@ def test_isolateHepaticArtery():
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_creatingFrames():
     
     times, durations = tsPT.returnFrameTimes()
@@ -282,29 +282,42 @@ def test_averagingAcrossMotionStates():
     feng1_framed, feng2_framed = tsPT.createBloodCurves(times, verbose=False)
     time = np.linspace(0.0, 3600.0, 3601)
     feng1_full, feng2_full = tsPT.createBloodCurves(time, verbose=False)
-    frame_activities = tsPT.returnFrameValues(time, feng2_full,
+    liver_full = tsPT.createLiverCurve(feng1_full, feng2_full, time)
+    vein_activities = tsPT.returnFrameValues(time, feng2_full,
+        times, durations)
+    artery_activities = tsPT.returnFrameValues(time, feng1_full,
+        times, durations)
+    liver_activities = tsPT.returnFrameValues(time, liver_full,
         times, durations)
 
     stem = "separate_veins_"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     states = 10
 
-    for j, activity in enumerate(frame_activities):
+    for cnt, activity in enumerate(vein_activities):
         for i in range(1, states + 1, 1):
             filename = stem + str(i) + ".nii"
             path = os.path.join(data_stem, filename)
             phantom_data = tsU.readNiftiImageData(path)
             portal_data = tsPT.isolateLiverVessels(phantom_data, verbose = False)
             if i == 1:
-                frame = tsPT.changeActivityInSingleRegion(portal_data, 43, activity)
+                portal_data1 = tsPT.changeActivityInSingleRegion(portal_data, 
+                    105, artery_activities[cnt])
+                portal_data2 = tsPT.changeActivityInSingleRegion(portal_data1, 
+                    7, liver_activities[cnt])
+                frame = tsPT.changeActivityInSingleRegion(portal_data2, 43, activity)
                 curr_arr = frame.as_array() / states
                 frame.fill(curr_arr)
             else:
-                working = tsPT.changeActivityInSingleRegion(portal_data, 43, activity)
+                portal_data1 = tsPT.changeActivityInSingleRegion(portal_data, 
+                    105, artery_activities[cnt])
+                portal_data2 = tsPT.changeActivityInSingleRegion(portal_data1, 
+                    7, liver_activities[cnt])
+                working = tsPT.changeActivityInSingleRegion(portal_data2, 43, activity)
                 curr_arr = frame.as_array()
                 curr_arr += working.as_array() / states
                 frame.fill(curr_arr)
-        out_name = os.path.join(data_stem, "frame_" + str(j) + ".nii")
+        out_name = os.path.join(data_stem, "frame_" + str(cnt) + ".nii")
         frame.write(out_name)
 
     assert True
@@ -320,7 +333,7 @@ def test_displayNiftiAverageFrame():
 
     assert True
     
-@pytest.mark.skip()
+#@pytest.mark.skip()
 def test_displayMovieOfAverageFrames():
     frames = int(20)
     frame_dim = int(256)
