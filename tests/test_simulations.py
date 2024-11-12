@@ -250,6 +250,9 @@ def test_creatingFrames():
     liver_activities = tsPT.returnFrameValues(time, liver_full,
         times, durations)
     print(liver_activities)
+    start = 0.0; stop = 1200.0
+    other_activities = tsPT.otherOrganRampValues(start, stop, times)
+    #print(other_activities)
 
     frame_dim = portal_data.dimensions()
     print(frame_dim)
@@ -260,7 +263,8 @@ def test_creatingFrames():
             105, artery_activities[cnt])
         portal_data2 = tsPT.changeActivityInSingleRegion(portal_data1, 
             7, liver_activities[cnt])
-        frame = tsPT.changeActivityInSingleRegion(portal_data2, 43, activity)
+        portal_data3 = tsPT.changeRemainingActivities(portal_data2, cnt, other_activities)
+        frame = tsPT.changeActivityInSingleRegion(portal_data3, 43, activity)
         dynamic_data[i, :, :] = frame.as_array()[:, :, 37]
         i += 1
 
@@ -289,6 +293,8 @@ def test_averagingAcrossMotionStates():
         times, durations)
     liver_activities = tsPT.returnFrameValues(time, liver_full,
         times, durations)
+    start = 0.0; stop = 1200.0
+    other_activities = tsPT.otherOrganRampValues(start, stop, times)
 
     stem = "separate_veins_"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
@@ -305,7 +311,9 @@ def test_averagingAcrossMotionStates():
                     105, artery_activities[cnt])
                 portal_data2 = tsPT.changeActivityInSingleRegion(portal_data1, 
                     7, liver_activities[cnt])
-                frame = tsPT.changeActivityInSingleRegion(portal_data2, 43, activity)
+                portal_data3 = tsPT.changeRemainingActivities(portal_data2, 
+                    cnt, other_activities)
+                frame = tsPT.changeActivityInSingleRegion(portal_data3, 43, activity)
                 curr_arr = frame.as_array() / states
                 frame.fill(curr_arr)
             else:
@@ -313,7 +321,9 @@ def test_averagingAcrossMotionStates():
                     105, artery_activities[cnt])
                 portal_data2 = tsPT.changeActivityInSingleRegion(portal_data1, 
                     7, liver_activities[cnt])
-                working = tsPT.changeActivityInSingleRegion(portal_data2, 43, activity)
+                portal_data3 = tsPT.changeRemainingActivities(portal_data2, 
+                    cnt, other_activities)
+                working = tsPT.changeActivityInSingleRegion(portal_data3, 43, activity)
                 curr_arr = frame.as_array()
                 curr_arr += working.as_array() / states
                 frame.fill(curr_arr)

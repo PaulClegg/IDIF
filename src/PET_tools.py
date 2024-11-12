@@ -55,6 +55,43 @@ def convertPhantomToActivity(phantom_data, verbose=True):
 
     return image_data
 
+def otherOrganRampValues(start, stop, times):
+    activities = [["Bone", 1, 2.4],
+                    ["Fat", 2, 0.0],
+                    ["Skin", 3, 1.0],
+                    ["Colon", 4, 1.6],
+                    ["Gastro", 5, 2.2],
+                    ["Pancreas", 6, 3.0], 
+                    ["Liver", 7, 27.5],
+                    ["Muscle", 8, 2.8],
+                    ["Gallbladder", 9, 4.9],
+                    ["Adrenalgland", 10, 3.4],
+                    ["Vein", 11, 0.0],
+                    ["Kidneys", 12, 5.0],
+                    ["Spleen", 13, 4.2],
+                    ["Artery", 14, 0.0],
+                    ["Ureter", 15, 1.5]]
+    other_activities = np.zeros((len(activities), len(times)))
+    for iTime, time in enumerate(times):
+        fraction = abs((time - start) / (stop - start))
+        for iOrgan in range(len(activities)):
+            if time < stop:
+                other_activities[iOrgan, iTime] = fraction
+            else:
+                other_activities[iOrgan, iTime] = 1.0
+            other_activities[iOrgan, iTime] *= activities[iOrgan][2]
+
+    return other_activities
+
+def changeRemainingActivities(phantom_data, iTime, other_activities):
+    phantom_arr = phantom_data.as_array()
+    for iOrgan in range(len(other_activities)):
+        phantom_arr[phantom_arr == (iOrgan + 1)] = other_activities[iOrgan, iTime]
+
+    active = phantom_data.clone()
+    active.fill(phantom_arr)
+    return active
+
 def isolateLiverVessels(phantom_data, verbose=True):
     phantom_arr = phantom_data.as_array()
     print(f"Max value = {phantom_arr.max()}")
