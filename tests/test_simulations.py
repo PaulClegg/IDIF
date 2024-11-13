@@ -296,7 +296,8 @@ def test_averagingAcrossMotionStates():
     start = 0.0; stop = 1200.0
     other_activities = tsPT.otherOrganRampValues(start, stop, times)
 
-    stem = "separate_veins_"
+    #stem = "separate_veins_"
+    stem = "hepatic_motion_"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     states = 10
 
