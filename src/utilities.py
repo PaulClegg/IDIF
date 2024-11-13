@@ -73,3 +73,8 @@ def saveGadgetronImageAsRegNifti(image_data, data_stem, filename):
     reg_out.fill(image_arr)
     reg_out.write(os.path.join(data_stem, filename))
 
+def convertNiftiFilesToMovie(data_stem, stem):
+    filename = os.path.join(data_stem, stem + "1.nii")
+    img = nib.load(filename)
+    print(img.header)
+

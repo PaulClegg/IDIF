@@ -36,6 +36,14 @@ def test_displayNiftiImage():
 
     assert True
 
+#@pytest.mark.skip()
+def test_convertNiftiFilesToMovie():
+    stem = "frame_"
+    data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
+    tsU.convertNiftiFilesToMovie(data_stem, stem)
+
+    assert True
+
 @pytest.mark.skip()
 def test_convertToUmap():
     filename = "phantom_motion1.nii"
@@ -344,7 +352,7 @@ def test_displayNiftiAverageFrame():
 
     assert True
     
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_displayMovieOfAverageFrames():
     frames = int(20)
     frame_dim = int(256)
