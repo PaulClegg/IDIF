@@ -40,7 +40,7 @@ def test_displayNiftiImage():
 def test_convertNiftiFilesToMovie():
     stem = "frame_"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
-    tsU.convertNiftiFilesToMovie(data_stem, stem)
+    tsU.convertNiftiFilesToMovie(data_stem, stem, 20)
 
     assert True
 

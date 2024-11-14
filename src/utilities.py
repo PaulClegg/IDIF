@@ -73,8 +73,58 @@ def saveGadgetronImageAsRegNifti(image_data, data_stem, filename):
     reg_out.fill(image_arr)
     reg_out.write(os.path.join(data_stem, filename))
 
-def convertNiftiFilesToMovie(data_stem, stem):
-    filename = os.path.join(data_stem, stem + "1.nii")
-    img = nib.load(filename)
-    print(img.header)
+def convertNiftiFilesToMovie(data_stem, stem, nFrames):
+    filename = os.path.join(data_stem, stem + "0.nii")
+    img1 = nib.load(filename)
+    print(img1.header)
+
+    # create header for movie
+    header = img1.header
+    print("\n\n")
+    print(header["dim"])
+    dim = header["dim"]
+    dim[0] = 4
+    dim[4] = nFrames
+    header["dim"] = dim
+    print(header["dim"])
+
+    print(header["pixdim"])
+    pixdim = header["pixdim"]
+    pixdim[4] = 1
+    header["pixdim"] = pixdim
+    print(header["pixdim"])
+
+    print(header["xyzt_units"])
+    xyzt_units = header["xyzt_units"]
+    xyzt_units = 10
+    header["xyzt_units"] = xyzt_units
+    print(header["xyzt_units"])
+
+    print(header["slice_duration"])
+    slice_duration = header["slice_duration"]
+    slice_duration = 1.0
+    header["slice_duration"] = slice_duration
+    print(header["slice_duration"])
+
+    print(header["slice_code"])
+    slice_code = header["slice_code"]
+    slice_code = 1
+    header["slice_code"] = slice_code
+    print(header["slice_code"])
+
+    frame1 = img1.get_fdata()
+
+    iShape = frame1.shape
+    movie = np.zeros((iShape[0], iShape[1], iShape[2], nFrames))
+    movie[:, :, :, 0] = frame1
+    for i in range(1, nFrames, 1):
+        filename = os.path.join(data_stem, stem + str(i) + ".nii")
+        img = nib.load(filename)
+        frame = img.get_fdata()
+        movie[:, :, :, i] = frame
+
+    outMovie = nib.Nifti1Image(movie, affine=img1.header.get_best_affine(), header=header)
+    out_name = os.path.join(data_stem, "test_movie.nii")
+    nib.save(outMovie, out_name)
+        
 
