@@ -38,7 +38,7 @@ def test_displayNiftiImage():
 
 #@pytest.mark.skip()
 def test_convertNiftiFilesToMovie():
-    stem = "frame_"
+    stem = "static_frame_"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     tsU.convertNiftiFilesToMovie(data_stem, stem, 20)
 
@@ -376,3 +376,69 @@ def test_displayMovieOfAverageFrames():
 
     assert True
     
+@pytest.mark.skip()
+def test_creatingMotionFreeFrames():
+    
+    times, durations = tsPT.returnFrameTimes()
+    print(times)
+    feng1_framed, feng2_framed = tsPT.createBloodCurves(times, verbose=False)
+
+    time = np.linspace(0.0, 3600.0, 3601)
+    feng1_full, feng2_full = tsPT.createBloodCurves(time, verbose=False)
+    liver_full = tsPT.createLiverCurve(feng1_full, feng2_full, time)
+
+    plt.figure()
+    plt.semilogx(time, feng1_full, color="r", label="Artery")
+    plt.semilogx(time, feng2_full, color="b", label="Portal Vein")
+    plt.scatter(times, feng1_framed, marker="o", color="r", label="Artery framed")
+    plt.scatter(times, feng2_framed, marker="o", color="b", label="Portal Vein framed")
+    plt.legend()
+    plt.xlabel("Time (sec)")
+    plt.ylabel("Activity conc. (Bq/mL)")
+    plt.show()
+
+    filename = "hepatic_motion_1.nii"
+    data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
+    path = os.path.join(data_stem, filename)
+    phantom_data = tsU.readNiftiImageData(path)
+    # Next line might be redundant
+    portal_data = tsPT.isolateLiverVessels(phantom_data, verbose = False)
+
+    vein_activities = tsPT.returnFrameValues(time, feng2_full,
+        times, durations)
+    vein_activities = np.flip(vein_activities)
+    artery_activities = tsPT.returnFrameValues(time, feng1_full,
+        times, durations)
+    liver_activities = tsPT.returnFrameValues(time, liver_full,
+        times, durations)
+    liver_activities /= 10.0
+    start = 0.0; stop = 1200.0
+    other_activities = tsPT.otherOrganRampValues(start, stop, times)
+
+    frame_dim = portal_data.dimensions()
+    print(frame_dim)
+    dynamic_data = np.zeros((len(vein_activities), frame_dim[0], frame_dim[1]))
+    i = 0
+    for cnt, activity in enumerate(vein_activities):
+        portal_data1 = tsPT.changeActivityInSingleRegion(portal_data, 
+            105, artery_activities[cnt])
+        portal_data2 = tsPT.changeActivityInSingleRegion(portal_data1, 
+            7, liver_activities[cnt])
+        portal_data3 = tsPT.changeRemainingActivities(portal_data2, cnt, other_activities)
+        frame = tsPT.changeActivityInSingleRegion(portal_data3, 43, activity)
+        dynamic_data[i, :, :] = frame.as_array()[:, :, 37]
+        i += 1
+        out_name = os.path.join(data_stem, "static_frame_" + str(cnt) + ".nii")
+        frame.write(out_name)
+
+    dynamic_data += 1e-6 # for log intensity scale
+    c=dynamic_data[0]
+    c=c.reshape(frame_dim[0], frame_dim[1]) # this is the size of my pictures
+    im=plt.imshow(c, norm="log", vmin=0.01, vmax=225.0)
+    for row in dynamic_data:
+        row=row.reshape(frame_dim[0], frame_dim[1]) # this is the size of my pictures
+        im.set_data(row)
+        plt.pause(0.5)
+    plt.show()
+
+    assert True
