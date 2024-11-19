@@ -36,7 +36,7 @@ def test_displayNiftiImage():
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_convertNiftiFilesToMovie():
     stem = "static_frame_"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
@@ -440,5 +440,16 @@ def test_creatingMotionFreeFrames():
         im.set_data(row)
         plt.pause(0.5)
     plt.show()
+
+    assert True
+
+#@pytest.mark.skip()
+def test_readExcelTAC():
+    filename = "MotionStudy1_ROIs.xlsx"
+    data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
+
+    times, durations = tsPT.returnFrameTimes()
+    results = tsU.readExcelTAC(os.path.join(data_stem, filename), "Liver")
+    print(results[0, :])
 
     assert True

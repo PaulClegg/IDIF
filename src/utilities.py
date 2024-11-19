@@ -7,6 +7,7 @@ import os
 import numpy as np
 import nibabel as nib
 from matplotlib import pyplot as plt
+from openpyxl import load_workbook
 
 import sirf.Reg as uReg
 
@@ -127,4 +128,20 @@ def convertNiftiFilesToMovie(data_stem, stem, nFrames, verbose=True):
     out_name = os.path.join(data_stem, "test_movie.nii")
     nib.save(outMovie, out_name)
         
+def readExcelTAC(wb_name, sheet_name, col_list=[9, 10]):
+    # Reading TACs created by Amide
+    wb = load_workbook(wb_name)
+    ws_method = wb[sheet_name]
+    MAX_ROW = ws_method.max_row
+    MAX_COL = ws_method.max_column
+
+    results = np.zeros((len(col_list), MAX_ROW - 2))
+    cnt = 0
+    for cell in ws_method.iter_rows(min_row = 3, max_row = MAX_ROW, 
+            min_col = col_list[0], max_col = col_list[-1], values_only = True):
+        for i in range(len(col_list)):
+            results[i, cnt] = float(cell[i])
+        cnt += 1
+
+    return results
 
