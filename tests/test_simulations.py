@@ -449,7 +449,35 @@ def test_readExcelTAC():
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
 
     times, durations = tsPT.returnFrameTimes()
-    results = tsU.readExcelTAC(os.path.join(data_stem, filename), "Liver")
-    print(results[0, :])
+    liver_results = tsU.readExcelTAC(os.path.join(data_stem, filename), "Liver")
+    pv_results = tsU.readExcelTAC(os.path.join(data_stem, filename), "PV2")
+    portal_results = tsU.readExcelTAC(os.path.join(data_stem, filename), "Portal Vein")
+    artery_results = tsU.readExcelTAC(os.path.join(data_stem, filename), "Artery")
+
+    time = np.linspace(0.0, 3600.0, 3601)
+    feng1_full, feng2_full = tsPT.createBloodCurves(time, verbose=False)
+    liver_full = tsPT.createLiverCurve(feng1_full, feng2_full, time)
+    liver_activities = tsPT.returnFrameValues(time, liver_full,
+        times, durations)
+    vein_activities = tsPT.returnFrameValues(time, feng2_full,
+        times, durations)
+    artery_activities = tsPT.returnFrameValues(time, feng1_full,
+        times, durations)
+
+    plt.figure()
+    plt.scatter(times, liver_results[0, :], marker="o", color="red")
+    plt.scatter(times, liver_activities, marker="+", color="blue")
+    plt.show()
+
+    plt.figure()
+    plt.scatter(times, artery_results[0, :], marker="o", color="red")
+    plt.scatter(times, artery_activities, marker="+", color="blue")
+    plt.show()
+
+    plt.figure()
+    plt.scatter(times, pv_results[0, :], marker="o", color="red")
+    plt.scatter(times, portal_results[0, :], marker="s", color="green")
+    plt.scatter(times, vein_activities, marker="+", color="blue")
+    plt.show()
 
     assert True
