@@ -114,7 +114,7 @@ def test_create3Dtemplate():
 
 @pytest.mark.skip()
 def test_imageToSinogram():
-    filename = "phantom_motion1.nii"
+    filename = "frame_2.nii"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     path = os.path.join(data_stem, filename)
     phantom_data = tsU.readNiftiImageData(path)
@@ -141,14 +141,16 @@ def test_imageToSinogram():
     name = "30001Tho_PetAcquisition_Raw_Data/attempt2a.n.hdr"
     norm_file = os.path.join(cvs_path, name)
 
-    raw_pet = tsPT.imageToSinogram(image_data, template, uMap_reshaped, norm_file, verbose=True)
-    out_name = "raw_pet_motion1.hs"
+    raw_pet = tsPT.imageToSinogram(image_data, template, uMap_reshaped, 
+        norm_file, verbose=True)
+    #out_name = "raw_pet_motion1.hs"
+    out_name = "raw_" + filename.split(".")[0] + ".hs"
     out_path = os.path.join(data_stem, out_name)
     raw_pet.write(out_path)
 
     assert True
 
-@pytest.mark.skip()
+#@pytest.mark.skip()
 def test_reconstructRawPhantomPET():
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     uMap_name = "uMap_phantom.nii"
@@ -169,12 +171,15 @@ def test_reconstructRawPhantomPET():
     name = "30001Tho_PetAcquisition_Raw_Data/attempt2a.n.hdr"
     norm_file = os.path.join(cvs_path, name)
 
-    PET_name = "raw_pet_motion1.hs"
+    #PET_name = "raw_pet_motion1.hs"
+    stem = "frame_2"
+    PET_name = "raw_" + stem + ".hs"
     PET_path = os.path.join(data_stem, PET_name)
     raw_pet = tsPET.AcquisitionData(PET_path)
 
     PET_image = tsPT.reconstructRawPhantomPET(raw_pet, template, uMap_reshaped, norm_file)
-    PET_out_name = "pet_motion1_image.hv"
+    #PET_out_name = "pet_motion1_image.hv"
+    PET_out_name = "pet_" + stem + "_image.hv"
     PET_out_path = os.path.join(data_stem, PET_out_name)
     PET_image.write(PET_out_path)
 
@@ -443,7 +448,7 @@ def test_creatingMotionFreeFrames():
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_readExcelTAC():
     filename = "MotionStudy1_ROIs.xlsx"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"

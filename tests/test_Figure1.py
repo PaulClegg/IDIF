@@ -77,7 +77,8 @@ def test_displayProjectedMRI():
 def test_displayReconstructedPET():
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
 
-    PET_image_name = "pet_motion1_image.hv"
+    #PET_image_name = "pet_motion1_image.hv"
+    PET_image_name = "pet_frame_2_image.hv"
     PET_image_path = os.path.join(data_stem, PET_image_name)
 
     PET_image = tf1PET.ImageData(PET_image_path)
@@ -93,6 +94,11 @@ def test_displayReconstructedPET():
     plt.figure()
     tf1U.imshow(PET_arr[z, :, :], None, title)
     plt.show()
+
+    #for z in range(image_shape[0]):
+    #    plt.figure()
+    #    tf1U.imshow(PET_arr[z, :, :], None, title)
+    #plt.show()
 
     assert True
 
