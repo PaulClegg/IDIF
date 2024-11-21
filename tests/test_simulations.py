@@ -114,12 +114,15 @@ def test_create3Dtemplate():
 
 @pytest.mark.skip()
 def test_imageToSinogram():
-    filename = "frame_2.nii"
+    filename = "static_frame_16.nii"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     path = os.path.join(data_stem, filename)
     phantom_data = tsU.readNiftiImageData(path)
 
-    image_data = tsPT.convertPhantomToActivity(phantom_data)
+    # For a phantom I need conversion to activity
+    #image_data = tsPT.convertPhantomToActivity(phantom_data)
+    # For a dynamic simulation - I don't
+    image_data = phantom_data
 
     template_path = os.path.join(data_stem, "template3D.hs")
     template = tsPET.AcquisitionData(template_path)
@@ -172,7 +175,7 @@ def test_reconstructRawPhantomPET():
     norm_file = os.path.join(cvs_path, name)
 
     #PET_name = "raw_pet_motion1.hs"
-    stem = "frame_2"
+    stem = "static_frame_16"
     PET_name = "raw_" + stem + ".hs"
     PET_path = os.path.join(data_stem, PET_name)
     raw_pet = tsPET.AcquisitionData(PET_path)
@@ -411,7 +414,7 @@ def test_creatingMotionFreeFrames():
 
     vein_activities = tsPT.returnFrameValues(time, feng2_full,
         times, durations)
-    vein_activities = np.flip(vein_activities)
+    #vein_activities = np.flip(vein_activities)
     artery_activities = tsPT.returnFrameValues(time, feng1_full,
         times, durations)
     liver_activities = tsPT.returnFrameValues(time, liver_full,
@@ -422,18 +425,21 @@ def test_creatingMotionFreeFrames():
 
     frame_dim = portal_data.dimensions()
     print(frame_dim)
-    dynamic_data = np.zeros((len(vein_activities), frame_dim[0], frame_dim[1]))
+    dynamic_data = np.zeros((len(vein_activities), frame_dim[0], 
+        frame_dim[1]))
     i = 0
     for cnt, activity in enumerate(vein_activities):
         portal_data1 = tsPT.changeActivityInSingleRegion(portal_data, 
             105, artery_activities[cnt])
         portal_data2 = tsPT.changeActivityInSingleRegion(portal_data1, 
             7, liver_activities[cnt])
-        portal_data3 = tsPT.changeRemainingActivities(portal_data2, cnt, other_activities)
+        portal_data3 = tsPT.changeRemainingActivities(portal_data2, 
+            cnt, other_activities)
         frame = tsPT.changeActivityInSingleRegion(portal_data3, 43, activity)
         dynamic_data[i, :, :] = frame.as_array()[:, :, 37]
         i += 1
-        out_name = os.path.join(data_stem, "static_frame_" + str(cnt) + ".nii")
+        out_name = os.path.join(data_stem, 
+            "static_frame_" + str(cnt) + ".nii")
         frame.write(out_name)
 
     dynamic_data += 1e-6 # for log intensity scale
