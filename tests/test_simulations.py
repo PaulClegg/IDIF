@@ -114,7 +114,7 @@ def test_create3Dtemplate():
 
 @pytest.mark.skip()
 def test_imageToSinogram():
-    filename = "static_frame_16.nii"
+    filename = "static_frame_2.nii"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     path = os.path.join(data_stem, filename)
     phantom_data = tsU.readNiftiImageData(path)
@@ -175,7 +175,7 @@ def test_reconstructRawPhantomPET():
     norm_file = os.path.join(cvs_path, name)
 
     #PET_name = "raw_pet_motion1.hs"
-    stem = "static_frame_16"
+    stem = "static_frame_2"
     PET_name = "raw_" + stem + ".hs"
     PET_path = os.path.join(data_stem, PET_name)
     raw_pet = tsPET.AcquisitionData(PET_path)
@@ -414,12 +414,12 @@ def test_creatingMotionFreeFrames():
 
     vein_activities = tsPT.returnFrameValues(time, feng2_full,
         times, durations)
-    #vein_activities = np.flip(vein_activities)
+    ###vein_activities = np.flip(vein_activities) # for navigation
     artery_activities = tsPT.returnFrameValues(time, feng1_full,
         times, durations)
     liver_activities = tsPT.returnFrameValues(time, liver_full,
         times, durations)
-    liver_activities /= 10.0
+    ###liver_activities /= 10.0 # for navigation
     start = 0.0; stop = 1200.0
     other_activities = tsPT.otherOrganRampValues(start, stop, times)
 

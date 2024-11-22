@@ -78,7 +78,7 @@ def test_displayReconstructedPET():
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
 
     #PET_image_name = "pet_motion1_image.hv"
-    PET_image_name = "pet_static_frame_16_image.hv"
+    PET_image_name = "pet_static_frame_2_image.hv"
     PET_image_path = os.path.join(data_stem, PET_image_name)
 
     PET_image = tf1PET.ImageData(PET_image_path)
