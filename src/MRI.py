@@ -81,6 +81,14 @@ def divideLineIntoChunks(line, verbose=True):
     return [name, num, T1, T2, ADC, PDFF]
 
 def forwardProjectStarvibeMRI(MRI_image, acq_file, verbose=True):
+    if verbose:
+        print("\nOriginal phantom image")
+        orig_arr = MRI_image.as_array()
+        print(orig_arr.shape)
+        z = orig_arr.shape[2] // 2
+        plt.figure()
+        plt.imshow(orig_arr[:, :, z])
+        plt.show()
     # I need an acquisition model for the StarVIBE data
     acq_data = mMR.AcquisitionData(acq_file, False,
         ignored=mMR.IgnoreMask(19))
