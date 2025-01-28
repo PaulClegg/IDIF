@@ -90,9 +90,10 @@ def test_convertPhantomToT1Values():
 
     assert True
 
-@pytest.mark.skip()
+#@pytest.mark.skip()
 def test_forwardProjectStarvibeMRI():
-    filename = "T1_motion1_image.nii"
+    #filename = "T1_motion1_image.nii"
+    filename = "reconstructed_mri_1.nii"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     path = os.path.join(data_stem, filename)
     T1_image = tsU.readNiftiImageData(path)
@@ -153,7 +154,7 @@ def test_imageToSinogram():
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_reconstructRawPhantomPET():
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     uMap_name = "uMap_phantom.nii"

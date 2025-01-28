@@ -356,7 +356,8 @@ def createLiverCurve(feng1, feng2, time, verbose = True):
 
         plt.figure()
         plt.plot(time, blood, color="b", label="Blood")
-        plt.plot(time, residue * (blood.max() / residue.max()), color="r", label="Residue")
+        plt.plot(time, residue * (blood.max() / residue.max()), 
+            color="r", label="Residue")
         plt.plot(time, liver, color="g", label="Liver")
         plt.legend()
         plt.xlabel("Time (sec)")
