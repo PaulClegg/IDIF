@@ -23,7 +23,8 @@ def test_displaySagittalUmapCut():
     aspect = z_size / xy_size
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     uMap_name = "uMap_phantom.nii"
-    path = os.path.join(data_stem, uMap_name)
+    datapath2 = os.path.join(data_stem, "static")
+    path = os.path.join(datapath2, uMap_name)
 
     uMap_image = tf1Reg.ImageData(path)
 

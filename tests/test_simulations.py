@@ -95,7 +95,8 @@ def test_forwardProjectStarvibeMRI():
     #filename = "T1_motion1_image.nii"
     filename = "reconstructed_mri_1.nii"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
-    path = os.path.join(data_stem, filename)
+    datapath2 = os.path.join(data_stem, "static")
+    path = os.path.join(datapath2, filename)
     T1_image = tsU.readNiftiImageData(path)
 
     raw_name = "phantom_template.h5"
@@ -132,8 +133,9 @@ def test_imageToSinogram():
     voxels_PET = im_pet.voxel_sizes()
     print("\n im_pet.voxel_sizes() \n", voxels_PET, "\n")
 
+    datapath2 = os.path.join(data_stem, "static")
     uMap_name = "uMap_phantom.nii"
-    uMap_path = os.path.join(data_stem, uMap_name)
+    uMap_path = os.path.join(datapath2, uMap_name)
     uMap_image = tsReg.ImageData(uMap_path)
     print(uMap_image.dimensions())
     uMap_reshaped = tsPT.reshapePhantomData(uMap_image, im_pet)
@@ -158,7 +160,8 @@ def test_imageToSinogram():
 def test_reconstructRawPhantomPET():
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
     uMap_name = "uMap_phantom.nii"
-    uMap_path = os.path.join(data_stem, uMap_name)
+    datapath2 = os.path.join(data_stem, "static")
+    uMap_path = os.path.join(datapath2, uMap_name)
     uMap_image = tsReg.ImageData(uMap_path)
 
     template_path = os.path.join(data_stem, "template3D.hs")
