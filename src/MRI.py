@@ -214,3 +214,80 @@ def calc_rad_traj_golden(ad):
     rad_traj[:, :, 1] = -1.0 * krad.reshape(-1, 1) * np.cos(angRad)
     rad_traj = np.moveaxis(rad_traj, 0, 1)
     return rad_traj
+
+def registerNifti(ref_name, flo_name, verbose=True):
+    if ref_name[-4:] == ".nii":
+        ref_image = mReg.ImageData(ref_name)
+        flo_image = mReg.ImageData(flo_name)
+    else:
+        assert 1 == 0, "This isn't going to work right now"
+        #ref_image = mPET.ImageData(ref_name)
+        #flo_image = mPET.ImageData(flo_name)
+
+    if verbose:
+        output_arr = flo_image.as_array()
+        out_slice = int(output_arr.shape[0] / 2)
+        ref_arr = ref_image.as_array()
+        print(ref_arr.shape)
+        ref_slice = int(ref_arr.shape[0] / 2)
+        print(output_arr.shape)
+        slices = [output_arr[out_slice, :, :],
+                  ref_arr[ref_slice, :, :]]
+        fig, axes = plt.subplots(1, len(slices))
+        for i, thisSlice in enumerate(slices):
+            axes[i].imshow(thisSlice)
+        plt.title('Initial image, slice: %i' % out_slice)
+        plt.show()
+        ref_y = int(ref_arr.shape[1] / 2)
+        slices = [output_arr[:, ref_y, :],
+                  ref_arr[:, ref_y, :]]
+        fig, axes = plt.subplots(1, len(slices))
+        for i, thisSlice in enumerate(slices):
+            axes[i].imshow(thisSlice)
+        plt.title('Initial image, y: %i' % out_slice)
+        plt.show()
+        
+    # Set to NiftyF3dSym for non-rigid
+    algo = mReg.NiftyAladinSym()
+
+    # Set images
+    algo.set_reference_image(ref_image)
+    algo.set_floating_image(flo_image)
+
+    algo.set_parameter('SetPerformRigid','1')
+    algo.set_parameter('SetPerformAffine','1')
+    #algo.set_parameter('SetWarpedPaddingValue','0') # initially this was unset (NaN)
+
+    algo.process()
+
+    if verbose:
+        output = algo.get_output()
+        #output.write("StarVIBE_in_PETspace_affine.hv")
+        output_arr = output.as_array()
+        out_slice = int(output_arr.shape[0] / 2)
+        ref_arr = ref_image.as_array()
+        print(ref_arr.shape)
+        ref_slice = int(ref_arr.shape[0] / 2)
+        print(output_arr.shape)
+        slices = [output_arr[out_slice, :, :],
+                  ref_arr[ref_slice, :, :]]
+        fig, axes = plt.subplots(1, len(slices))
+        for i, thisSlice in enumerate(slices):
+            axes[i].imshow(thisSlice)
+        plt.title('Registered image, slice: %i' % out_slice)
+        plt.show()
+        ref_y = int(ref_arr.shape[1] / 2)
+        slices = [output_arr[:, ref_y, :],
+                  ref_arr[:, ref_y, :]]
+        fig, axes = plt.subplots(1, len(slices))
+        for i, thisSlice in enumerate(slices):
+            axes[i].imshow(thisSlice)
+        plt.title('Registered image, y: %i' % out_slice)
+        plt.show()
+
+    np.set_printoptions(precision=3,suppress=True)
+    TM = algo.get_transformation_matrix_forward()
+    if verbose: print(TM.as_array())
+
+    return TM
+

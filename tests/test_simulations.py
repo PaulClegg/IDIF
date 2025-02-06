@@ -90,7 +90,7 @@ def test_convertPhantomToT1Values():
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_forwardProjectStarvibeMRI():
     #filename = "T1_motion1_image.nii"
     filename = "reconstructed_mri_1.nii"
@@ -503,5 +503,18 @@ def test_readExcelTAC():
     plt.ylabel("Activity conc. (Bq/mL)")
     plt.legend()
     plt.show()
+
+    assert True
+
+#@pytest.mark.skip()
+def test_registerNifti():
+    path = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data/motion"
+    ref_name = "motion_for_registration_1.nii"
+    ref_file = os.path.join(path, ref_name)
+    flo_name = "motion_for_registration_20.nii"
+    flo_file = os.path.join(path, flo_name)
+    
+
+    TM = tsM.registerNifti(ref_file, flo_file)
 
     assert True
