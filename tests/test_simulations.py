@@ -511,13 +511,18 @@ def test_readExcelTAC():
 
 #@pytest.mark.skip()
 def test_registerNifti():
+    #N = 2
     path = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data/motion"
     ref_name = "motion_for_registration_1.nii"
     ref_file = os.path.join(path, ref_name)
-    flo_name = "motion_for_registration_20.nii"
-    flo_file = os.path.join(path, flo_name)
-    
+    for N in range(2, 25, 1):
+        flo_name = "motion_for_registration_" + str(N) + ".nii"
+        flo_file = os.path.join(path, flo_name)
+        
 
-    TM = tsM.registerNifti(ref_file, flo_file)
+        TM = tsM.registerNifti(ref_file, flo_file, verbose=False)
+        out_name = "TM_" + str(N) + "_to_1.npy"
+        out_file = os.path.join(path, out_name)
+        np.save(out_file, TM)
 
     assert True

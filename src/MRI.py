@@ -289,5 +289,5 @@ def registerNifti(ref_name, flo_name, verbose=True):
     TM = algo.get_transformation_matrix_forward()
     if verbose: print(TM.as_array())
 
-    return TM
+    return TM.as_array()
 
