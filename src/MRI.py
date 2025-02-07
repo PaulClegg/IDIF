@@ -83,7 +83,7 @@ def divideLineIntoChunks(line, verbose=True):
 def forwardProjectStarvibeMRI(MRI_image, acq_file, verbose=True):
     if verbose:
         print("\nOriginal phantom image")
-        orig_arr = MRI_image.as_array()
+        orig_arr = np.abs(MRI_image.as_array())
         print(orig_arr.shape)
         z = orig_arr.shape[2] // 2
         plt.figure()
