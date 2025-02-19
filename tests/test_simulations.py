@@ -509,7 +509,7 @@ def test_readExcelTAC():
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_registerNifti():
     #N = 2
     path = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data/motion"
@@ -524,5 +524,40 @@ def test_registerNifti():
         out_name = "TM_" + str(N) + "_to_1.npy"
         out_file = os.path.join(path, out_name)
         np.save(out_file, TM)
+
+    assert True
+
+#@pytest.mark.skip()
+def test_simulatingFrameTwo():
+    times, durations = tsPT.returnFrameTimes()
+    print(times)
+    feng1_framed, feng2_framed = tsPT.createBloodCurves(times, verbose=False)
+
+    resp_ms = 500 / 3000.0 # length of respiratory motion state in seconds
+    resp_cycle = 4 # total duration of respiratory cycle in seconds
+    segment = 300.0
+    samples = int((5.0 * segment / resp_ms) + 1) # this is 5 samples per motion state
+
+    time = np.linspace(0.0, segment, samples) # High time resolution for respiration
+    feng1_full, feng2_full = tsPT.createBloodCurves(time, verbose=False)
+    liver_full = tsPT.createLiverCurve(feng1_full, feng2_full, time)
+
+    print(f"Frame 2 starts: {durations[0]}")
+    print(f"Frame 2 centre: {times[1]}")
+    print(f"Frame 2 duration: {durations[1]}")
+    print(f"Frame 2 ends: {np.sum(durations[0:2])}")
+
+    # I have about 5 time / activity points within each respiratory motion state
+    # For the purposes of getting activity values - I just need to know
+    # when respiratory motion states start and stop - I don't need to phase
+    resp_times = []
+    resp_dura = []
+    cycles = int(segment / resp_ms)
+    for i in range(cycles):
+        resp_times.append((float(i) + 0.5) * resp_ms)
+        resp_dura.append(resp_ms)
+
+    # Now I can just use the returnFrameValues code as is
+    # I will need to know the "i" values where frame 2 begins and ends
 
     assert True
