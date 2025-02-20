@@ -409,3 +409,28 @@ def returnFrameValues(full_time, full_activity, frame_times,
         plt.show()
 
     return frame_activities
+
+def returnMotionStateValues(full_time, full_activity, resp_times, 
+    resp_durations, verbose=True):
+
+    resp_activities = np.zeros(len(resp_times))
+    for i, t in enumerate(resp_times):
+        start = t - (resp_durations[i] / 2.0)
+        stop = t + (resp_durations[i] / 2.0)
+        # need to find the start and stop indices
+        x = np.array(full_time) > start
+        istart = x.argmax()
+        y = np.array(full_time) > stop
+        istop = y.argmax()
+        resp_activities[i] = np.mean(full_activity[istart:istop])
+
+    if verbose:
+        plt.figure()
+        plt.plot(full_time, full_activity, color="r", label="Continuous")
+        plt.scatter(resp_times, resp_activities, marker="o", color="r", label="Framed")
+        plt.legend()
+        plt.xlabel("Time (sec)")
+        plt.ylabel("Activity conc. (Bq/mL)")
+        plt.show()
+
+    return resp_activities

@@ -557,7 +557,25 @@ def test_simulatingFrameTwo():
         resp_times.append((float(i) + 0.5) * resp_ms)
         resp_dura.append(resp_ms)
 
-    # Now I can just use the returnFrameValues code as is
+    liver_activities = tsPT.returnMotionStateValues(time, liver_full,
+        resp_times, resp_dura)
+    vein_activities = tsPT.returnMotionStateValues(time, feng2_full,
+        resp_times, resp_dura)
+    artery_activities = tsPT.returnMotionStateValues(time, feng1_full,
+        resp_times, resp_dura)
+
     # I will need to know the "i" values where frame 2 begins and ends
+    f2_start = durations[0]
+    f2_stop = np.sum(durations[0:2])
+    x = resp_times > f2_start
+    if2_start = x.argmax()
+    y = resp_times > f2_stop
+    if2_stop = y.argmax()
+
+    f2_liver = liver_activities[if2_start:if2_stop]
+    f2_vein = vein_activities[if2_start:if2_stop]
+    f2_artery = artery_activities[if2_start:if2_stop]
+    f2_times = resp_times[if2_start:if2_stop]
+    print(f"Motion states in frame 2: {len(f2_times)}")
 
     assert True
