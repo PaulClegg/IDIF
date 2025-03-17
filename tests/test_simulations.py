@@ -578,4 +578,10 @@ def test_simulatingFrameTwo():
     f2_times = resp_times[if2_start:if2_stop]
     print(f"Motion states in frame 2: {len(f2_times)}")
 
+    # I can create 0.5 sec sinograms covering the frame
+    # Each sinogram will contain three respiratory motion states
+
+    # At short times (first 4/5 minutes) these are corrected using MRI
+    # At long times (last 45/46 minutes) these are corrected via pca on PET itself
+
     assert True
