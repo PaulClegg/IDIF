@@ -5,9 +5,11 @@ To test creation of image data from phantom data
 
 import pytest
 import os
+import sys
 import numpy as np
 from matplotlib import pyplot as plt
 
+sys.path.insert(0, '/home/jovyan/IDIF/src')
 import utilities as tsU
 import uMap as tsP
 import MRI as tsM
