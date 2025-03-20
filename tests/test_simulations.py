@@ -538,9 +538,9 @@ def test_simulatingFrameTwo():
     resp_ms = 500 / 3000.0 # length of respiratory motion state in seconds
     resp_cycle = 4 # total duration of respiratory cycle in seconds
     segment = 300.0
-    samples = int((5.0 * segment / resp_ms) + 1) # this is 5 samples per motion state
+    samples = int((5.0 * segment / resp_ms) + 1) # 5 samples per motion state
 
-    time = np.linspace(0.0, segment, samples) # High time resolution for respiration
+    time = np.linspace(0.0, segment, samples) # High resolution for respiration
     feng1_full, feng2_full = tsPT.createBloodCurves(time, verbose=False)
     liver_full = tsPT.createLiverCurve(feng1_full, feng2_full, time)
 
@@ -551,7 +551,7 @@ def test_simulatingFrameTwo():
 
     # I have about 5 time / activity points within each respiratory motion state
     # For the purposes of getting activity values - I just need to know
-    # when respiratory motion states start and stop - I don't need to phase
+    # when respiratory motion states start and stop - I don't need the phase
     resp_times = []
     resp_dura = []
     cycles = int(segment / resp_ms)
