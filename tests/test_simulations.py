@@ -544,6 +544,9 @@ def test_simulatingFrameTwo():
     feng1_full, feng2_full = tsPT.createBloodCurves(time, verbose=False)
     liver_full = tsPT.createLiverCurve(feng1_full, feng2_full, time)
 
+    start = 0.0; stop = 3000.0
+    other_activities = tsPT.otherOrganRampValues(start, stop, times)
+
     print(f"Frame 2 starts: {durations[0]}")
     print(f"Frame 2 centre: {times[1]}")
     print(f"Frame 2 duration: {durations[1]}")
@@ -582,6 +585,28 @@ def test_simulatingFrameTwo():
 
     # I can create 0.5 sec sinograms covering the frame
     # Each sinogram will contain three respiratory motion states
+
+    # First sinogram for frame 2 contains motion states 19, 20 and 21
+    # Each of these needs filling with a different activity
+    stem = "motion_for_registration_"
+    data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data/motion"
+    frame_no = 2
+    for i in [19, 20, 21]:
+        filename = stem + str(i) + ".nii"
+        path = os.path.join(data_stem, filename)
+        phantom_data = tsU.readNiftiImageData(path)
+        portal_data = tsPT.isolateLiverVessels(phantom_data)
+
+        i_act = i - 19
+        portal_data1 = tsPT.changeActivityInSingleRegion(portal_data, 
+            105, f2_artery[i_act])
+        portal_data2 = tsPT.changeActivityInSingleRegion(portal_data1, 
+            7, f2_liver[i_act])
+        portal_data3 = tsPT.changeRemainingActivities(portal_data2, 
+            (frame_no - 1), other_activities)
+        frame = tsPT.changeActivityInSingleRegion(portal_data3, 
+            43, f2_vein[i_act])
+
 
     # At short times (first 4/5 minutes) these are corrected using MRI
     # At long times (last 45/46 minutes) these are corrected via pca on PET itself
