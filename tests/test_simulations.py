@@ -589,7 +589,8 @@ def test_simulatingFrameTwo():
     # First sinogram for frame 2 contains motion states 19, 20 and 21
     # Each of these needs filling with a different activity
     stem = "motion_for_registration_"
-    data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data/motion"
+    #data_stem="/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data/motion"
+    data_stem = "/home/jovyan/IDIF/data/motion"
     frame_no = 2
     for i in [19, 20, 21]:
         filename = stem + str(i) + ".nii"
@@ -606,6 +607,24 @@ def test_simulatingFrameTwo():
             (frame_no - 1), other_activities)
         frame = tsPT.changeActivityInSingleRegion(portal_data3, 
             43, f2_vein[i_act])
+        if i_act < 1:
+            total = frame.as_array()
+        else:
+            total += frame.as_array()
+        
+    total /= 3.0
+    # Record sinogram of three motion states
+    seg_no = 1
+    segment = phantom_data.clone()
+    segment.fill(total)
+    tsPT.recordSinogram(segment, data_stem, seg_no, frame_no)
+
+    # Record image of frame
+    frame2 = phantom_data.clone()
+    frame2.fill(total)
+    out_name = "frame2.nii"
+    path = os.path.join(data_stem, out_name)
+    frame2.write(path)
 
 
     # At short times (first 4/5 minutes) these are corrected using MRI

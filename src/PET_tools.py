@@ -9,6 +9,7 @@ import scipy.ndimage as sn
 from matplotlib import pyplot as plt
 
 import sirf.STIR as pPET
+import sirf.Reg as pReg
 
 def create3Dtemplate(data_stem):
     template = pPET.AcquisitionData('Siemens_mMR', span=11, 
@@ -142,6 +143,34 @@ def changeActivityInSingleRegion(phantom_data, region, newActivity):
     new_phantom.fill(phantom_arr)
 
     return new_phantom
+
+def recordSinogram(image_data, data_stem, seg_no, frame_no):
+    separate = data_stem.split("/")[1:-1]
+    cvs_path = "/" + separate[0] + "/" + separate[1] + "/" +\
+            separate[2] + "/" + separate[3]
+    template_path = os.path.join(cvs_path, "template3D.hs")
+    template = pPET.AcquisitionData(template_path)
+    im_pet = pPET.ImageData(template)
+    print("\n im_pet.dimensions() \n", im_pet.dimensions(), "\n")
+    voxels_PET = im_pet.voxel_sizes()
+    print("\n im_pet.voxel_sizes() \n", voxels_PET, "\n")
+
+    datapath2 = os.path.join(cvs_path, "static")
+    uMap_name = "uMap_phantom.nii"
+    uMap_path = os.path.join(datapath2, uMap_name)
+    uMap_image = pReg.ImageData(uMap_path)
+    print(uMap_image.dimensions())
+    uMap_reshaped = reshapePhantomData(uMap_image, im_pet)
+    print(uMap_reshaped.dimensions())
+
+    name = "attempt2a.n.hdr"
+    norm_file = os.path.join(cvs_path, name)
+
+    raw_pet = imageToSinogram(image_data, template, uMap_reshaped,
+        norm_file, verbose=True)
+    out_name = "raw_frame" + str(frame_no) + "_seg" + str(seg_no) + ".hs"
+    out_path = os.path.join(data_stem, out_name)
+    raw_pet.write(out_path)
 
 def imageToSinogram(image_data, template, attn_image, norm_file, verbose=True):
 
