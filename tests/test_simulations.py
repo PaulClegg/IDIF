@@ -529,7 +529,7 @@ def test_registerNifti():
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_simulatingFrameTwo():
     times, durations = tsPT.returnFrameTimes()
     print(times)
@@ -591,14 +591,17 @@ def test_simulatingFrameTwo():
     stem = "motion_for_registration_"
     #data_stem="/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data/motion"
     data_stem = "/home/jovyan/IDIF/data/motion"
+    int_list = np.linspace(0, 89, 90, dtype=np.int32)
+    ms_list = (int_list + 18) % 24 + 1
     frame_no = 2
-    for i in [19, 20, 21]:
+    seg_no = 0
+    ms_per_sino = 9
+    for i_act, i in enumerate(ms_list):
         filename = stem + str(i) + ".nii"
         path = os.path.join(data_stem, filename)
         phantom_data = tsU.readNiftiImageData(path)
         portal_data = tsPT.isolateLiverVessels(phantom_data)
 
-        i_act = i - 19
         portal_data1 = tsPT.changeActivityInSingleRegion(portal_data, 
             105, f2_artery[i_act])
         portal_data2 = tsPT.changeActivityInSingleRegion(portal_data1, 
@@ -611,16 +614,22 @@ def test_simulatingFrameTwo():
             total = frame.as_array()
         else:
             total += frame.as_array()
-        
-    total /= 3.0
-    # Record sinogram of three motion states
-    seg_no = 1
-    segment = phantom_data.clone()
-    segment.fill(total)
-    tsPT.recordSinogram(segment, data_stem, seg_no, frame_no)
+        if i_act % ms_per_sino == 0:
+            sino = frame.as_array()
+        elif i_act % ms_per_sino == (ms_per_sino - 1):
+            sino += frame.as_array()
+            # Record sinogram of n motion states
+            sino /= ms_per_sino
+            seg_no += 1
+            segment = phantom_data.clone()
+            segment.fill(sino)
+            tsPT.recordSinogram(segment, data_stem, seg_no, frame_no)
+        else:
+            sino += frame.as_array()
 
     # Record image of frame
     frame2 = phantom_data.clone()
+    total /= len(ms_list)
     frame2.fill(total)
     out_name = "frame2.nii"
     path = os.path.join(data_stem, out_name)
@@ -629,5 +638,115 @@ def test_simulatingFrameTwo():
 
     # At short times (first 4/5 minutes) these are corrected using MRI
     # At long times (last 45/46 minutes) these are corrected via pca on PET itself
+
+    assert True
+
+#@pytest.mark.skip()
+def test_simulatingFrameEight():
+    #! unmodified start
+    times, durations = tsPT.returnFrameTimes()
+    print(times)
+    feng1_framed, feng2_framed = tsPT.createBloodCurves(times, verbose=False)
+
+    resp_ms = 500 / 3000.0 # length of respiratory motion state in seconds
+    resp_cycle = 4 # total duration of respiratory cycle in seconds
+    segment = 300.0
+    samples = int((5.0 * segment / resp_ms) + 1) # 5 samples per motion state
+
+    time = np.linspace(0.0, segment, samples) # High resolution for respiration
+    feng1_full, feng2_full = tsPT.createBloodCurves(time, verbose=False)
+    liver_full = tsPT.createLiverCurve(feng1_full, feng2_full, time)
+
+    start = 0.0; stop = 3000.0
+    other_activities = tsPT.otherOrganRampValues(start, stop, times)
+    #! unmodified end
+
+    print(f"Frame 8 starts: {np.sum(durations[0:7])}")
+    print(f"Frame 8 centre: {times[7]}")
+    print(f"Frame 8 duration: {durations[7]}")
+    print(f"Frame 8 ends: {np.sum(durations[0:8])}")
+
+    #! unmodified start
+    resp_times = []
+    resp_dura = []
+    cycles = int(segment / resp_ms)
+    for i in range(cycles):
+        resp_times.append((float(i) + 0.5) * resp_ms)
+        resp_dura.append(resp_ms)
+
+    liver_activities = tsPT.returnMotionStateValues(time, liver_full,
+        resp_times, resp_dura)
+    vein_activities = tsPT.returnMotionStateValues(time, feng2_full,
+        resp_times, resp_dura)
+    artery_activities = tsPT.returnMotionStateValues(time, feng1_full,
+        resp_times, resp_dura)
+    #! unmodified end
+
+    # I will need to know the "i" values where frame 8 begins and ends
+    f8_start = np.sum(durations[0:7])
+    f8_stop = np.sum(durations[0:8])
+    x = resp_times > f8_start
+    if8_start = x.argmax()
+    y = resp_times > f8_stop
+    if8_stop = y.argmax()
+
+    f8_liver = liver_activities[if8_start:if8_stop]
+    f8_vein = vein_activities[if8_start:if8_stop]
+    f8_artery = artery_activities[if8_start:if8_stop]
+    f8_times = resp_times[if8_start:if8_stop]
+    print(f"Motion states in frame 8: {len(f8_times)}")
+
+    # I can create 0.5 sec sinograms covering the frame
+    # Each sinogram will contain three respiratory motion states
+
+    # First sinogram for frame 8 contains motion states 7, 8 and 9
+    # Each of these needs filling with a different activity
+    stem = "motion_for_registration_"
+    data_stem = "/home/jovyan/IDIF/data/motion"
+    int_list = np.linspace(0, 89, 90, dtype=np.int32)
+    ms_list = (int_list + 6) % 24 + 1 # this line modified with start no.
+    frame_no = 8
+    seg_no = 0
+    ms_per_sino = 9
+    #! unmodified start - I lied f2_artery -> f8_artery etc.
+    for i_act, i in enumerate(ms_list):
+        filename = stem + str(i) + ".nii"
+        path = os.path.join(data_stem, filename)
+        phantom_data = tsU.readNiftiImageData(path)
+        portal_data = tsPT.isolateLiverVessels(phantom_data)
+
+        portal_data1 = tsPT.changeActivityInSingleRegion(portal_data, 
+            105, f8_artery[i_act])
+        portal_data2 = tsPT.changeActivityInSingleRegion(portal_data1, 
+            7, f8_liver[i_act])
+        portal_data3 = tsPT.changeRemainingActivities(portal_data2, 
+            (frame_no - 1), other_activities)
+        frame = tsPT.changeActivityInSingleRegion(portal_data3, 
+            43, f8_vein[i_act])
+        if i_act < 1:
+            total = frame.as_array()
+        else:
+            total += frame.as_array()
+        if i_act % ms_per_sino == 0:
+            sino = frame.as_array()
+        elif i_act % ms_per_sino == (ms_per_sino - 1):
+            sino += frame.as_array()
+            # Record sinogram of n motion states
+            sino /= ms_per_sino
+            seg_no += 1
+            segment = phantom_data.clone()
+            segment.fill(sino)
+            tsPT.recordSinogram(segment, data_stem, seg_no, frame_no)
+        else:
+            sino += frame.as_array()
+    #! unmodified end
+
+    # Record image of frame
+    frame8 = phantom_data.clone()
+    total /= len(ms_list)
+    frame8.fill(total)
+    out_name = "frame8.nii"
+    path = os.path.join(data_stem, out_name)
+    frame8.write(path)
 
     assert True
