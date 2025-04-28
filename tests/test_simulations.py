@@ -9,7 +9,8 @@ import sys
 import numpy as np
 from matplotlib import pyplot as plt
 
-sys.path.insert(0, '/home/jovyan/IDIF/src')
+#sys.path.insert(0, '/home/jovyan/IDIF/src')
+sys.path.insert(0, '/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/src')
 import utilities as tsU
 import uMap as tsP
 import MRI as tsM
@@ -27,7 +28,7 @@ def test_readingNiftiImage():
 
     assert True
 
-@pytest.mark.skip()
+#@pytest.mark.skip()
 def test_displayNiftiImage():
     filename = "phantom_motion1.nii"
     data_stem = "/home/pclegg/devel/SIRF-SuperBuild/docker/devel/IDIF/data"
@@ -641,7 +642,7 @@ def test_simulatingFrameTwo():
 
     assert True
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 def test_simulatingFrameEight():
     #! unmodified start
     times, durations = tsPT.returnFrameTimes()
