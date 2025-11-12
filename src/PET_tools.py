@@ -204,7 +204,13 @@ def imageToSinogram(image_data, template, attn_image, norm_file, verbose=True):
 
     acq_model.set_acquisition_sensitivity(asm)
 
-    reshaped = reshapePhantomData(image_data, im_pet)
+    image_dim = image_data.dimensions()
+    temp_dim = im_pet.dimensions()
+    if ((image_dim[0] == temp_dim[0] and image_dim[1] == temp_dim[1]) and
+            image_dim[2] == temp_dim[2]):
+        reshaped = image_data
+    else:
+        reshaped = reshapePhantomData(image_data, im_pet)
     if verbose: 
         print(f"From reshaped phantom: {reshaped.dimensions()}")
 
